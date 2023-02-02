@@ -12,8 +12,8 @@ class SwerveModule:
     drive_motor: rev.CANSparkMax
     turn_motor: rev.CANSparkMax
 
-    drive_encoder: rev.AbsoluteEncoder
-    turn_encoder: rev.AbsoluteEncoder
+    drive_encoder: rev.SparkMaxRelativeEncoder
+    turn_encoder: rev.SparkMaxRelativeEncoder
 
     turn_pid: PIDController
 
@@ -126,6 +126,8 @@ class SwerveModule:
     def reset_encoders(self) -> None:
         self.drive_encoder.setPosition(0)
         self.turn_encoder.setPosition(self.get_absolute_encoder_rad())
+        # self.drive_encoder.setZeroOffset(self.drive_encoder.getPosition())
+        # self.turn_encoder.setZeroOffset(self.get_absolute_encoder_rad())
 
     def get_state(self) -> SwerveModuleState:
         return SwerveModuleState(

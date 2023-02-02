@@ -1,6 +1,6 @@
 from threading import Thread
 from time import sleep
-from typing import Tuple
+from typing import List, Tuple
 from wpimath.kinematics import (
     SwerveModuleState,
     SwerveDrive4Odometry,
@@ -71,16 +71,30 @@ class SwerveSubsystem(SubsystemBase):
     def get_rotation2d(self):
         return Rotation2d.fromDegrees(self.get_angle())
 
-    def get_pose(self):
+    def get_pose(self) -> Pose2d:
         return self.odometer.getPose()
 
-    # def reset_odometer(self, pose: Pose2d):
-    #     self.odometer.resetPosition(self.get_rotation2d(), pose, self.front_left.) # TODO get the positions of the modules
+    def reset_odometer(self, pose: Pose2d):
+        self.odometer.resetPosition(
+            self.get_rotation2d(),
+            pose,
+            self.front_left.get_position(),
+            self.front_right.get_position(),
+            self.back_right.get_position(),
+            self.back_left.get_position(),
+        )
 
     # override
     def periodic(self) -> None:
-        # TODO print gyro angle on dashboard
-        pass
+        # TODO print gyro angle, robot pose on dashboard
+
+        self.odometer.update(
+            self.get_rotation2d(),
+            self.front_left.get_position(),
+            self.front_right.get_position(),
+            self.back_right.get_position(),
+            self.back_left.get_position(),
+        )
 
     def stop(self) -> None:
         self.front_left.stop()
@@ -88,12 +102,15 @@ class SwerveSubsystem(SubsystemBase):
         self.back_left.stop()
         self.back_right.stop()
 
+    def set_module_states_list(self, states: List[SwerveModuleState]) -> None:
+        self.set_module_states(tuple(states))  # type: ignore
+
     def set_module_states(
         self,
         states: Tuple[
             SwerveModuleState, SwerveModuleState, SwerveModuleState, SwerveModuleState
         ],
-    ):
+    ) -> None:
         SwerveDrive4Kinematics.desaturateWheelSpeeds(
             states, SwerveConstants.kWheelMaxSpeedMetersPerSecond
         )

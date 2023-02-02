@@ -23,8 +23,8 @@ class SwerveCommand(Command):
         # get_y: Callable[[None], float],
         # get_z: Callable[[None], float],
         controller: CommandPS4Controller,
-        get_right_stick_sets_angle: Callable[[None], bool],
-        get_field_oriented: Callable[[None], bool],
+        get_right_stick_sets_angle: Callable[[], bool],
+        get_field_oriented: Callable[[], bool],
     ) -> None:
         super().__init__()
 
@@ -75,7 +75,7 @@ class SwerveCommand(Command):
         x = self.x_limiter.calculate(x)
         y = self.y_limiter.calculate(y)
 
-        chassis_speeds = None
+        chassis_speeds: ChassisSpeeds
         if self.get_right_stick_sets_angle():
             rx = dz(self.controller.getRightX())
             ry = dz(self.controller.getRightY())

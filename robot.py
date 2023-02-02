@@ -32,6 +32,11 @@ class Robot(wp.TimedRobot):
 
         CommandScheduler.getInstance().run()
 
+    def autonomousInit(self) -> None:
+        auto_command = self.robot_container.getAutonomousCommand()
+        if auto_command is not None:
+            auto_command.schedule()
+
     def teleopPeriodic(self) -> None:
         pass
 
