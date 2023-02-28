@@ -6,6 +6,9 @@ from wpimath.controller import PIDController
 class Robot(wp.TimedRobot):
     def robotInit(self):
         self.motor = rev.CANSparkMax(2, rev.CANSparkMax.MotorType.kBrushless)
+        self.armPID = PIDController(0.02, 0, 0)
+        self.motorEncoder = self.motor.getAbsoluteEncoder(rev.SparkMaxAbsoluteEncoder.Type.kDutyCycle)
+        self.armAngleSetPoint = self.motorEncoder.getPosition()
         self.turn = rev.CANSparkMax(3, rev.CANSparkMax.MotorType.kBrushless)
         self.turnEnconder = self.turn.getAbsoluteEncoder(rev.SparkMaxAbsoluteEncoder.Type.kDutyCycle)
         self.controller = wp.XboxController(0)
@@ -13,26 +16,27 @@ class Robot(wp.TimedRobot):
         self.turnPID = PIDController(kP, 0, 0)
     
     def teleopPeriodic(self):
-       
-        y = self.controller.getRightY()
-        x = self.controller.getRightX()
-        angle = math.atan2(y, x) + math.pi
-        angle += math.pi 
-        angle = angle % (math.pi * 2)
-        currentAngle = self.turnEnconder.getPosition()
-        print("angle", angle, "currentAngle", currentAngle)
-        motorturnSpeed = self.turnPID.calculate(currentAngle, angle)
-        self.turn.set(motorturnSpeed)
+        L2 = self.controller.getLeftTriggerAxis()
+        R2 = self.controller.getRightTriggerAxis()
+        armAngle = self.motorEncoder.getPosition() # assuming it's between 0 and 2pi
+        armAngle -= math.pi
+        if abs(armAngle) < 0.87:
+            if L2 > .5:
+                self.armAngleSetPoint -= .0000001
+            if R2 > .5:
+                self.armAngleSetPoint += .0000001
+        armMotorSpeed = self.armPID.calculate(armAngle, self.armAngleSetPoint)
+        self.motor.set(armMotorSpeed)
+        # y = self.controller.getRightY()
+        # x = self.controller.getRightX()
+        # angle = math.atan2(y, x) + math.pi
+        # angle += math.pi 
+        # angle = angle % (math.pi * 2)
+        # currentAngle = self.turnEnconder.getPosition()
+        # print("angle", angle, "currentAngle", currentAngle)
+        # motorturnSpeed = self.turnPID.calculate(currentAngle, angle)
+        # self.turn.set(motorturnSpeed)
 
-        # print(angle)
-        # motorSpeed = self.controller.getRawAxis(1)
-        # motorTurnSpeed = self.controller.getRawAxis(0)
-        # if motorSpeed < 0.05:
-        #     motorSpeed = 0
-        # if motorTurnSpeed < 0.05:
-        #     motorTurnSpeed = 0
-        # self.motor.set(motorSpeed)
-        # self.turn.set(motorTurnSpeed)
 
     def robotPeriodic(self):
         pass
