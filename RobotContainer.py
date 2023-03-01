@@ -35,17 +35,21 @@ class RobotContainer:
     def __init__(self) -> None:
         self.configure_button_bindings()
 
-        self.swerve_subsystem.setDefaultCommand(
-            SwerveCommand(
-                self.swerve_subsystem,
-                self.controller,
-                self.get_right_stick_sets_angle,
-                self.get_field_oriented,
+        if self.controller.isConnected():
+            self.swerve_subsystem.setDefaultCommand(
+                SwerveCommand(
+                    self.swerve_subsystem,
+                    self.controller,
+                    self.get_right_stick_sets_angle,
+                    self.get_field_oriented,
+                )
             )
-        )
 
     def get_right_stick_sets_angle(self) -> bool:
         return self.right_stick_sets_angle
+
+    def get_angle(self):
+        return self.swerve_subsystem.get_angle()
 
     def teleopPeriodic(self) -> None:
         if self.controller.getSquareButtonPressed():
@@ -59,7 +63,8 @@ class RobotContainer:
         print("Field oriented: ", self.field_oriented)
 
     def configure_button_bindings(self) -> None:
-        self.controller.square().onTrue(InstantCommand(self.toggle_field_oriented))
+        if self.controller.isConnected():
+            self.controller.square().onTrue(InstantCommand(self.toggle_field_oriented))
 
     def getAutonomousCommand(self):
         trajectory_config = TrajectoryConfig(

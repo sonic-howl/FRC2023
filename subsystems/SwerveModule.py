@@ -147,12 +147,15 @@ class SwerveModule:
             return
 
         state = SwerveModuleState.optimize(state, self.get_state().angle)
-        self.drive_motor.set(state.speed / SwerveConstants.kDriveMaxMetersPerSecond)
-        self.turn_motor.set(
-            self.turn_pid.calculate(
-                self.turn_encoder.getPosition(), state.angle.radians()
-            )
+
+        drive_speed = state.speed / SwerveConstants.kDriveMaxMetersPerSecond
+        drive_speed = max(drive_speed, 0.05)
+        self.drive_motor.set(drive_speed)
+        turn_speed = self.turn_pid.calculate(
+            self.turn_encoder.getPosition(), state.angle.radians()
         )
+        turn_speed = max(turn_speed, 0.05)
+        self.turn_motor.set(turn_speed)
 
     def stop(self) -> None:
         self.drive_motor.set(0)
