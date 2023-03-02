@@ -9,3 +9,6 @@ Sonic Howl's robot code repository for FRC 2023
 2. **Installing RoboPy (Python library):** Our robot code this year will be written in python. Because of this, we will also need to install the RoboPy python library. To do this, follow the steps on the [RoboPy setup documentation site](https://robotpy.readthedocs.io/en/stable/install/computer.html#install-computer).
 
 3. **Running Robot Code:** To run the robot code, type `py -3 robot.py deploy` into the terminal. To run the code in the simulator, type `py -3 robot.py sim` into the terminal.
+
+Webhook:
+https://discord.com/api/webhooks/1080990460035747840/M5FLqzQWFm_lLNd7CunalWq13Erbpta00Gxa96MRn2Me4PcqpATi5P8xJlI8GTIhtEVm
