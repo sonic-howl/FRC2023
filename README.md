@@ -15,6 +15,12 @@
 
 `python -m robotpy_installer install robotpy robotpy[rev] robotpy[navx] robotpy[ctre] robotpy[pathplannerlib] robotpy[photonvision] robotpy[commands2] robotpy[apriltag]`
 
+OR
+
+`python -m robotpy_installer download robotpy[all]`
+
+`python -m robotpy_installer install robotpy[all]`
+
 # Simulate robot code
 
 `python robot.py sim`

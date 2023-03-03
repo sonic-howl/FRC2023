@@ -27,15 +27,15 @@ class SwerveConstants:
 
     fr_drive_id = 4
     fr_turn_id = 5
-    fr_abs_encoder_id = 1
+    fr_abs_encoder_id = 0
 
     bl_drive_id = 6
     bl_turn_id = 7
-    bl_abs_encoder_id = 2
+    bl_abs_encoder_id = 0
 
     br_drive_id = 8
     br_turn_id = 9
-    br_abs_encoder_id = 3
+    br_abs_encoder_id = 0
 
     kPTurning = 0.5
     kITurning = 0

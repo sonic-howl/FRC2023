@@ -13,7 +13,7 @@ class SwerveModule:
     turn_motor: rev.CANSparkMax
 
     drive_encoder: rev.SparkMaxRelativeEncoder
-    turn_encoder: rev.SparkMaxRelativeEncoder
+    # turn_encoder: rev.SparkMaxAbsoluteEncoder
 
     turn_pid: PIDController
 
@@ -47,9 +47,13 @@ class SwerveModule:
         self.turn_motor.setInverted(turn_motor_reversed)
 
         # create encoders
-        self.abs_encoder = wp.AnalogInput(abs_encoder_id)
+        # self.abs_encoder = wp.AnalogInput(abs_encoder_id)
+        # self.abs_encoder = wp.AnalogInput(abs_encoder_id)
         self.drive_encoder = self.drive_motor.getEncoder()
-        self.turn_encoder = self.turn_motor.getEncoder()
+        # self.turn_encoder = self.turn_motor.getEncoder()
+        self.turn_encoder = self.turn_motor.getAbsoluteEncoder(
+            rev.SparkMaxAbsoluteEncoder.Type.kDutyCycle
+        )
 
         self.drive_encoder.setPositionConversionFactor(
             SwerveConstants.kDriveEncoderRotToMeters
@@ -113,19 +117,20 @@ class SwerveModule:
         #     self.turner_pid.setReference(optimized_state.angle.getRadians(), rev.CANSparkMax.ControlType.kPosition)
 
     def get_absolute_encoder_rad(self) -> float:
-        # voltage to angle
-        # Divide voltage reading by the voltage supplied to it
-        angle = self.abs_encoder.getVoltage() / wp.RobotController.getVoltage5V()
-        # to rad
-        angle *= 2 * math.pi
-        angle -= self.abs_encoder_offset_rad
+        # # voltage to angle
+        # # Divide voltage reading by the voltage supplied to it
+        # angle = self.abs_encoder.getVoltage() / wp.RobotController.getVoltage5V()
+        # # to rad
+        # angle *= 2 * math.pi
+        # angle -= self.abs_encoder_offset_rad
+        angle = self.turn_encoder.getPosition()
         if self.abs_encoder_reversed:
             angle *= -1
         return angle
 
     def reset_encoders(self) -> None:
         self.drive_encoder.setPosition(0)
-        self.turn_encoder.setPosition(self.get_absolute_encoder_rad())
+        # self.turn_encoder.setPosition(self.get_absolute_encoder_rad())
         # self.drive_encoder.setZeroOffset(self.drive_encoder.getPosition())
         # self.turn_encoder.setZeroOffset(self.get_absolute_encoder_rad())
 
