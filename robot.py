@@ -61,6 +61,8 @@ class Robot(wp.TimedRobot):
             print("Auto command scheduled")
 
     def teleopPeriodic(self) -> None:
+        self.robot_container.teleopPeriodic()
+
         # TODO maybe stop the auto command here if executing the swerve drive command doesn't stop it.
         # There may not need to be any teleop code here if everything uses commands.
         # The commands are run using the command scheduler which is run in robotPeriodic.

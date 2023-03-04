@@ -1,4 +1,5 @@
 import rev
+import ctre
 import wpilib as wp
 from wpimath.kinematics import SwerveModuleState, SwerveModulePosition
 from wpimath.geometry import Rotation2d
@@ -9,17 +10,14 @@ from constants import SwerveConstants, Constants
 
 
 class SwerveModule:
-    drive_motor: rev.CANSparkMax
-    turn_motor: rev.CANSparkMax
+    # drive_motor: ctre.WPI_TalonFX
+    # turn_motor: rev.CANSparkMax
 
-    drive_encoder: rev.SparkMaxRelativeEncoder
-    # turn_encoder: rev.SparkMaxAbsoluteEncoder
+    # turn_pid: PIDController
 
-    turn_pid: PIDController
-
-    abs_encoder: wp.AnalogInput
-    abs_encoder_reversed: bool
-    abs_encoder_offset_rad: float
+    # abs_encoder: wp.AnalogInput
+    # abs_encoder_reversed: bool
+    # abs_encoder_offset_rad: float
 
     def __init__(
         self,
@@ -37,9 +35,7 @@ class SwerveModule:
         self.abs_encoder_reversed = abs_encoder_reversed
 
         # create motors
-        self.drive_motor = rev.CANSparkMax(
-            drive_motor_id, rev.CANSparkMaxLowLevel.MotorType.kBrushless
-        )
+        self.drive_motor = ctre.WPI_TalonFX(drive_motor_id)
         self.drive_motor.setInverted(drive_motor_reversed)
         self.turn_motor = rev.CANSparkMax(
             turn_motor_id, rev.CANSparkMaxLowLevel.MotorType.kBrushless
@@ -49,18 +45,18 @@ class SwerveModule:
         # create encoders
         # self.abs_encoder = wp.AnalogInput(abs_encoder_id)
         # self.abs_encoder = wp.AnalogInput(abs_encoder_id)
-        self.drive_encoder = self.drive_motor.getEncoder()
+        # self.drive_encoder = self.drive_motor.getSelectedSensorPosition()
         # self.turn_encoder = self.turn_motor.getEncoder()
         self.turn_encoder = self.turn_motor.getAbsoluteEncoder(
             rev.SparkMaxAbsoluteEncoder.Type.kDutyCycle
         )
 
-        self.drive_encoder.setPositionConversionFactor(
-            SwerveConstants.kDriveEncoderRotToMeters
-        )
-        self.drive_encoder.setVelocityConversionFactor(
-            SwerveConstants.kDriveEncoderRotToVelocityMps
-        )
+        # self.drive_motor.setPositionConversionFactor(
+        #     SwerveConstants.kDriveEncoderRotToMeters
+        # )
+        # self.drive_encoder.setVelocityConversionFactor(
+        #     SwerveConstants.kDriveEncoderRotToVelocityMps
+        # )
         self.turn_encoder.setPositionConversionFactor(
             SwerveConstants.kTurnEncoderRotToMeters
         )
@@ -129,20 +125,23 @@ class SwerveModule:
         return angle
 
     def reset_encoders(self) -> None:
-        self.drive_encoder.setPosition(0)
+        # self.drive_encoder.setPosition(0)
+        self.drive_motor.setSelectedSensorPosition(0)
         # self.turn_encoder.setPosition(self.get_absolute_encoder_rad())
         # self.drive_encoder.setZeroOffset(self.drive_encoder.getPosition())
         # self.turn_encoder.setZeroOffset(self.get_absolute_encoder_rad())
 
     def get_state(self) -> SwerveModuleState:
         return SwerveModuleState(
-            speed=self.drive_encoder.getVelocity(),
+            # speed=self.drive_encoder.getVelocity(),
+            speed=self.drive_motor.getSelectedSensorVelocity(),
             angle=Rotation2d(self.get_absolute_encoder_rad()),
         )
 
     def get_position(self) -> SwerveModulePosition:
         return SwerveModulePosition(
-            distance=self.drive_encoder.getPosition(),
+            # distance=self.drive_encoder.getPosition(),
+            distance=self.drive_motor.getSelectedSensorPosition(),
             angle=Rotation2d(self.get_absolute_encoder_rad()),
         )
 
