@@ -38,6 +38,8 @@ class Robot(wp.TimedRobot):
         # )
 
         self.robot_container = RobotContainer()
+        # testing
+        # self.robot_container.buildPPAutonomousCommand()
 
     def robotPeriodic(self) -> None:
         self.gyroTopic.set(self.robot_container.get_angle())
@@ -49,10 +51,10 @@ class Robot(wp.TimedRobot):
             self.robot_container.swerve_subsystem.front_left.get_position().angle.degrees()
         )
 
-        try:
-            CommandScheduler.getInstance().run()
-        except:
-            print("CommandScheduler error")
+        # try:
+        #     CommandScheduler.getInstance().run()
+        # except:
+        #     print("CommandScheduler error")
 
     def autonomousInit(self) -> None:
         auto_command = self.robot_container.getAutonomousCommand()

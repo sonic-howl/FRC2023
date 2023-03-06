@@ -1,5 +1,6 @@
-import wpilib
-from wpimath.kinematics import ChassisSpeeds
+from threading import Thread
+from pathplannerlib import PathPlanner, PathConstraints
+from wpimath.kinematics import ChassisSpeeds, SwerveModuleState
 from wpimath.trajectory import (
     TrajectoryConfig,
     TrajectoryGenerator,
@@ -83,17 +84,17 @@ class RobotContainer:
             self.toggle_field_oriented()
 
         x = dz(self.controller.getRawAxis(0))
-        y = dz(self.controller.getRawAxis(1))
+        y = -dz(self.controller.getRawAxis(1))
 
-        x = self.x_limiter.calculate(x)
-        y = self.y_limiter.calculate(y)
+        # x = self.x_limiter.calculate(x)
+        # y = self.y_limiter.calculate(y)
 
-        chassis_speeds: ChassisSpeeds
+        chassis_speeds: ChassisSpeeds | None = None
         if self.get_right_stick_sets_angle():
             rx = dz(self.controller.getRawAxis(4))
             ry = dz(self.controller.getRawAxis(5))
 
-            magnitude = rx + ry
+            magnitude = abs(rx) + abs(ry)
 
             if magnitude > 0.25:
                 rotation2d = Rotation2d(rx, ry)
@@ -106,10 +107,11 @@ class RobotContainer:
                     current_robot_angle, rotation2d.degrees()
                 )
 
-                chassis_speeds = ChassisSpeeds(x, y, rotation_speed)
-
                 chassis_speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                    chassis_speeds, self.swerve_subsystem.get_rotation2d()
+                    x * SwerveConstants.kDriveMaxMetersPerSecond,
+                    y * SwerveConstants.kDriveMaxMetersPerSecond,
+                    rotation_speed,
+                    self.swerve_subsystem.get_rotation2d(),
                 )
 
             # print("SwerveCommand chassis_speeds: ", chassis_speeds)
@@ -118,24 +120,46 @@ class RobotContainer:
             z = dz(self.controller.getRawAxis(4))
             z = self.z_limiter.calculate(z)
             chassis_speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                chassis_speeds, self.swerve_subsystem.get_rotation2d()
+                x * SwerveConstants.kDriveMaxMetersPerSecond,
+                y * SwerveConstants.kDriveMaxMetersPerSecond,
+                z,
+                self.swerve_subsystem.get_rotation2d(),
             )
         else:
-            # z = dz(self.controller.getRightX())
-            z = dz(self.controller.getRawAxis(4))
-            # z = self.z_limiter.calculate(z) # TODO
-            chassis_speeds = ChassisSpeeds(x, y, z)
+            z = dz(-self.controller.getRawAxis(4))
+            magnitude = abs(x) + abs(y) + abs(z)
+            if magnitude > 0.05:
+                # z = self.z_limiter.calculate(z) # TODO
+                chassis_speeds = ChassisSpeeds(
+                    x * SwerveConstants.kDriveMaxMetersPerSecond,
+                    y * SwerveConstants.kDriveMaxMetersPerSecond,
+                    z,
+                )
 
-        if abs(chassis_speeds.vx) > 0 or abs(chassis_speeds.vy) > 0:
-            print(chassis_speeds)
+        if chassis_speeds:
+            swerve_module_states = (
+                SwerveConstants.kDriveKinematics.toSwerveModuleStates(chassis_speeds)
+            )
 
-        swerve_module_states = SwerveConstants.kDriveKinematics.toSwerveModuleStates(
-            chassis_speeds
-        )
+            # if (
+            #     abs(chassis_speeds.vx) > 0
+            #     or abs(chassis_speeds.vy) > 0
+            #     or abs(chassis_speeds.omega) > 0
+            # ):
+            #     Thread(
+            #         target=print,
+            #         args=[
+            #             chassis_speeds,
+            #             "SwerveCommand swerve_module_states: ",
+            #             swerve_module_states,
+            #         ],
+            #     ).start()
 
-        # print("SwerveCommand swerve_module_states: ", swerve_module_states)
+            self.swerve_subsystem.set_module_states(swerve_module_states)
+        else:
+            self.swerve_subsystem.set_module_states((SwerveModuleState(),) * 4)
 
-        self.swerve_subsystem.set_module_states(swerve_module_states)
+    # def autonomousPeriodic(self) -> None:
 
     def get_field_oriented(self) -> bool:
         return self.field_oriented
@@ -147,6 +171,18 @@ class RobotContainer:
     def configure_button_bindings(self) -> None:
         if self.controller.isConnected():
             self.controller.square().onTrue(InstantCommand(self.toggle_field_oriented))
+
+    def buildPPAutonomousCommand(self):
+        path_group = PathPlanner.loadPathGroup(
+            "FullPath",
+            SwerveConstants.kDriveMaxMetersPerSecond,
+            SwerveConstants.kDriveMaxAccelerationMetersPerSecond,
+        )
+
+        # TODO
+
+        for trajectory in path_group:
+            print(trajectory.asWPILibTrajectory())
 
     def getAutonomousCommand(self):
         trajectory_config = TrajectoryConfig(

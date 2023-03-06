@@ -1,3 +1,4 @@
+import math
 from threading import Thread
 from time import sleep
 from typing import List, Tuple
@@ -16,29 +17,33 @@ from constants import SwerveConstants, Constants
 
 
 class SwerveSubsystem(SubsystemBase):
-    front_left = SwerveModule(
-        SwerveConstants.fl_drive_id,
-        SwerveConstants.fl_turn_id,
-        SwerveConstants.fl_abs_encoder_id,
-        period=Constants.period,
-    )
     front_right = SwerveModule(
         SwerveConstants.fr_drive_id,
         SwerveConstants.fr_turn_id,
-        SwerveConstants.fr_abs_encoder_id,
-        period=Constants.period,
+        abs_encoder_offset_rad=SwerveConstants.fr_abs_encoder_offset_rad,
+        chassis_angular_offset=SwerveConstants.fr_chassis_angular_offset,
+        drive_motor_reversed=True,
     )
     back_right = SwerveModule(
         SwerveConstants.br_drive_id,
         SwerveConstants.br_turn_id,
-        SwerveConstants.br_abs_encoder_id,
-        period=Constants.period,
+        abs_encoder_offset_rad=SwerveConstants.br_abs_encoder_offset_rad,
+        chassis_angular_offset=SwerveConstants.br_chassis_angular_offset,
+        drive_motor_reversed=True,
     )
     back_left = SwerveModule(
         SwerveConstants.bl_drive_id,
         SwerveConstants.bl_turn_id,
-        SwerveConstants.bl_abs_encoder_id,
-        period=Constants.period,
+        abs_encoder_offset_rad=SwerveConstants.bl_abs_encoder_offset_rad,
+        chassis_angular_offset=SwerveConstants.bl_chassis_angular_offset,
+        drive_motor_reversed=True,
+    )
+    front_left = SwerveModule(
+        SwerveConstants.fl_drive_id,
+        SwerveConstants.fl_turn_id,
+        abs_encoder_offset_rad=SwerveConstants.fl_abs_encoder_offset_rad,
+        chassis_angular_offset=SwerveConstants.fl_chassis_angular_offset,
+        drive_motor_reversed=True,
     )
 
     gyro = AHRS(SPI.Port.kMXP, int(1000 / (Constants.period * 1000)))
@@ -111,10 +116,10 @@ class SwerveSubsystem(SubsystemBase):
             SwerveModuleState, SwerveModuleState, SwerveModuleState, SwerveModuleState
         ],
     ) -> None:
-        SwerveDrive4Kinematics.desaturateWheelSpeeds(
-            states, SwerveConstants.kWheelMaxSpeedMetersPerSecond
-        )
+        # SwerveDrive4Kinematics.desaturateWheelSpeeds(
+        #     states, SwerveConstants.kWheelMaxSpeedMetersPerSecond
+        # )
         self.front_left.set_desired_state(states[0])
         self.front_right.set_desired_state(states[1])
-        self.back_left.set_desired_state(states[2])
-        self.back_right.set_desired_state(states[3])
+        self.back_right.set_desired_state(states[2])
+        self.back_left.set_desired_state(states[3])
