@@ -1,18 +1,16 @@
-import math
 import wpilib as wp
-from subsystems.SwerveModule import SwerveModule
-from wpimath.kinematics import SwerveModuleState
-from wpimath.geometry import Rotation2d
-import rev
-from commands2 import CommandScheduler
+
+# from subsystems.SwerveModule import SwerveModule
+# from wpimath.kinematics import SwerveModuleState
+# from wpimath.geometry import Rotation2d
+# from commands2 import CommandScheduler
+# import rev
 
 # from networktables import NetworkTables
 from ntcore import NetworkTableInstance
 
-import rev
 
-
-from commands.SwerveCommand import SwerveCommand
+# from commands.SwerveCommand import SwerveCommand
 from RobotContainer import RobotContainer
 
 from constants import Constants
@@ -26,8 +24,8 @@ class Robot(wp.TimedRobot):
         # self.smartDashboard = NetworkTables.getTable("SmartDashboard")
         network_table_instance = NetworkTableInstance.getDefault()
         self.smartDashboard = network_table_instance.getTable("SmartDashboard")
-        self.gyroTopic = self.smartDashboard.getFloatTopic("Gyro Angle").publish()
-        self.turner_topic = self.smartDashboard.getFloatTopic("Turn Encoder").publish()
+        self.gyroTopic = self.smartDashboard.getDoubleTopic("Gyro Angle").publish()
+        self.turner_topic = self.smartDashboard.getDoubleTopic("Turn Encoder").publish()
         # # create ps4 controller
         # self.controller = wp.PS4Controller(0)
 
@@ -42,6 +40,8 @@ class Robot(wp.TimedRobot):
         # self.robot_container.buildPPAutonomousCommand()
 
     def robotPeriodic(self) -> None:
+        self.robot_container.robotPeriodic()
+
         self.gyroTopic.set(self.robot_container.get_angle())
 
         self.turner_topic.set(
@@ -57,10 +57,14 @@ class Robot(wp.TimedRobot):
         #     print("CommandScheduler error")
 
     def autonomousInit(self) -> None:
-        auto_command = self.robot_container.getAutonomousCommand()
-        if auto_command is not None:
-            auto_command.schedule()
-            print("Auto command scheduled")
+        # auto_command = self.robot_container.getAutonomousCommand()
+        # if auto_command is not None:
+        #     auto_command.schedule()
+        #     print("Auto command scheduled")
+        self.robot_container.autonomousInit()
+
+    def autonomousPeriodic(self) -> None:
+        self.robot_container.autonomousPeriodic()
 
     def teleopPeriodic(self) -> None:
         self.robot_container.teleopPeriodic()
