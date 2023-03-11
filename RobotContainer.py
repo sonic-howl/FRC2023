@@ -1,5 +1,5 @@
-import math
 from typing import List
+from LightStrip import LightStrip
 
 from wpilib import Field2d, SmartDashboard
 from commands.SwerveAutoCommand import SwerveAutoCommand
@@ -83,6 +83,9 @@ class RobotContainer:
 
         self.robot_angle_offset = Rotation2d(Constants.robot_angle_offset)
 
+        self.light_strip = LightStrip(Constants.light_strip_pwm_port)
+        self.light_strip.setRainbowSlow()
+
         self.field = Field2d()
         SmartDashboard.putData("Field", self.field)
 
@@ -93,6 +96,8 @@ class RobotContainer:
         return self.swerve_subsystem.get_angle()
 
     def robotPeriodic(self):
+        self.light_strip.update()
+
         self.swerve_subsystem.periodic()
         self.field.setRobotPose(self.swerve_subsystem.get_pose())
 
