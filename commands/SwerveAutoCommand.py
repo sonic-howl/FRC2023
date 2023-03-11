@@ -12,10 +12,9 @@ from wpimath.controller import (
     ProfiledPIDControllerRadians,
     HolonomicDriveController,
 )
-from wpimath.geometry import Transform2d
-from wpimath.trajectory import TrapezoidProfileRadians, Trajectory
 
-# from wpimath._controls._controls import
+from wpimath.geometry import Transform2d, Pose2d, Rotation2d, Translation2d
+from wpimath.trajectory import TrapezoidProfileRadians, Trajectory
 
 
 class PathTraverser:
@@ -31,7 +30,9 @@ class PathTraverser:
             SwerveConstants.kDriveMaxAccelerationMetersPerSecond,
         )
 
-        print(f"Loaded path group: {name}", path_group)
+        print(f"Loaded path group: {name}")
+        print("Start pose:", path_group[0].getInitialPose())
+        print("End pose:  ", path_group[-1].getEndState().pose)
 
         self.path_group = path_group
 
@@ -45,7 +46,7 @@ class PathTraverser:
 
         self.timer = wpilib.Timer()
 
-        self.path_traversed = False
+        self.paths_traversed = False
 
         self.total_time = 0
         self.iterations = 0
@@ -67,7 +68,7 @@ class PathTraverser:
 
     def move_to_next_path(self) -> None:
         if self.current_path_index + 1 >= len(self.path_group):
-            self.path_traversed = True
+            self.paths_traversed = True
             return
         self.current_path_index += 1
         self.current_path = self.path_group[self.current_path_index]
@@ -78,9 +79,10 @@ class PathTraverser:
         self.event_markers = self.current_path.getMarkers()
         self.stop_event = self.current_path.getEndStopEvent()
 
-    # def sample(self) -> PathPlannerTrajectory.PathPlannerState | None:
-    def sample(self) -> Trajectory.State | None:
-        if self.path_traversed:
+        # def sample(self) -> Trajectory.State | None:
+
+    def sample(self) -> PathPlannerTrajectory.PathPlannerState | None:
+        if self.paths_traversed:
             return None
 
         total_time = self.current_path.getTotalTime()
@@ -102,16 +104,7 @@ class PathTraverser:
 
         self.iterations += 1
 
-        wpilib_current_path = self.current_path.asWPILibTrajectory()
-        # wpilib_current_path = wpilib_current_path.transformBy(
-        #     Transform2d(
-        #         -self.current_path_initial_state.pose.x,
-        #         -self.current_path_initial_state.pose.y,
-        #         0,
-        #     )
-        # )
-
-        return wpilib_current_path.sample(time)
+        return self.current_path.sample(time)
 
     def on(
         self, name: str, func: Callable[[PathPlannerTrajectory.EventMarker], None]
@@ -130,25 +123,26 @@ class SwerveAutoCommand:
         x_pid = PIDController(1, 0, 0, period=Constants.period)
         y_pid = PIDController(1, 0, 0, period=Constants.period)
         theta_pid = ProfiledPIDControllerRadians(
-            1,
+            0.5,
             0,
             0,
-            TrapezoidProfileRadians.Constraints(3, 2),
+            TrapezoidProfileRadians.Constraints(),
             period=Constants.period,
         )
         self.controller = HolonomicDriveController(x_pid, y_pid, theta_pid)
         # self.controller = PPHolonomicDriveController(x_pid, y_pid, theta_pid)
         # theta_pid = PIDController(0, 0, 0, period=Constants.period)
 
-        self.traverser = PathTraverser("Forwards_1m")
+        self.traverser = PathTraverser("Spin_90")
 
         def handle_stop(stop_event: PathPlannerTrajectory.StopEvent) -> None:
             print_async(
                 "STOP EVENT",
                 stop_event.waitBehavior,
                 stop_event.names,
+                "\nwait time:",
                 stop_event.waitTime,
-                "\n" "Final Pose:",
+                "\nFinal Pose:",
                 self.swerve_subsystem.get_pose(),
             )
 
@@ -173,23 +167,31 @@ class SwerveAutoCommand:
         #     self.swerve_subsystem.get_pose(),
         # )
 
-    # def move_to_state(self, state: PathPlannerTrajectory.PathPlannerState):
-    def move_to_state(self, state: Trajectory.State):
-        # chassis_speeds = self.controller.calculate(
-        #     self.swerve_subsystem.get_pose(),
-        #     state.pose,
-        #     state.velocity,
-        #     state.pose.rotation(),
-        # )
-
+    # def move_to_state(self, state: Trajectory.State):
+    def move_to_state(self, state: PathPlannerTrajectory.PathPlannerState):
         chassis_speeds = self.controller.calculate(
-            self.swerve_subsystem.get_pose(), state, state.pose.rotation()
+            self.swerve_subsystem.get_pose(),
+            state.pose,
+            state.velocity,
+            state.holonomicRotation,
+        )
+
+        # chassis_speeds = self.controller.calculate(
+        #     self.swerve_subsystem.get_pose(), state, state.pose.rotation()
+        # )
+        print(
+            "current_pose:  ",
+            self.swerve_subsystem.get_pose(),
+            "\nsetpoint rot:        ",
+            state.holonomicRotation,
+            "\nchassis_speeds:",
+            chassis_speeds,
         )
         swerve_module_states = SwerveConstants.kDriveKinematics.toSwerveModuleStates(
             chassis_speeds
         )
 
-        self.swerve_subsystem.set_module_states(swerve_module_states)
+        self.swerve_subsystem.set_module_states(swerve_module_states, isClosedLoop=True)
 
         # print_async(self.traverser.timer.get(), swerve_module_states)
 

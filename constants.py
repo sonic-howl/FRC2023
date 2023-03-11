@@ -66,8 +66,8 @@ class SwerveConstants:
     # br_chassis_angular_offset = math.pi
     br_chassis_angular_offset = math.pi / 2
 
-    # kPTurning = 1
-    kPTurning = 0.15
+    kPTurning = 1
+    # kPTurning = 0.4
     kITurning = 0
     kDTurning = 0
 

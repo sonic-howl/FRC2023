@@ -159,7 +159,7 @@ class RobotContainer:
                 self.swerve_subsystem.get_rotation2d(),
             )
         else:
-            z = self.controller.getRawAxis(4)
+            z = -self.controller.getRawAxis(4)
             z = (dz(z) ** 2) * sign(z)
             magnitude = abs(x) + abs(y) + abs(z)
             if magnitude > 0.05:

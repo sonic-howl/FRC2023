@@ -113,29 +113,29 @@ class SwerveSubsystem(SubsystemBase):
             self.back_right.get_position(),
         )
 
-        self.temp_timer.start()
-        if self.temp_timer.advanceIfElapsed(1):
-            if (
-                self.front_right.drive_motor.getSelectedSensorPosition()
-                != self.last_sensor_pos
-            ):
+    #         self.temp_timer.start()
+    #         if self.temp_timer.advanceIfElapsed(1):
+    #             if (
+    #                 self.front_right.drive_motor.getSelectedSensorPosition()
+    #                 != self.last_sensor_pos
+    #             ):
 
-                def do():
-                    print(
-                        f"""Robot pose: {self.odometer.getPose()}
-back_right sensor pos: {self.back_right.drive_motor.getSelectedSensorPosition()}
-front right velocity: {self.front_right.drive_motor.getSelectedSensorVelocity()}
-front_left : {self.front_left.get_position()}
-front_right: {self.front_right.get_position()}
-back_left:   {self.back_left.get_position()}
-back_right:  {self.back_right.get_position()}
-"""
-                    )
+    #                 def do():
+    #                     print(
+    #                         f"""Robot pose: {self.odometer.getPose()}
+    # back_right sensor pos: {self.back_right.drive_motor.getSelectedSensorPosition()}
+    # front right velocity: {self.front_right.drive_motor.getSelectedSensorVelocity()}
+    # front_left : {self.front_left.get_position()}
+    # front_right: {self.front_right.get_position()}
+    # back_left:   {self.back_left.get_position()}
+    # back_right:  {self.back_right.get_position()}
+    # """
+    #                     )
 
-                Thread(target=do).start()
-                self.last_sensor_pos = (
-                    self.front_right.drive_motor.getSelectedSensorPosition()
-                )
+    #                 Thread(target=do).start()
+    #                 self.last_sensor_pos = (
+    #                     self.front_right.drive_motor.getSelectedSensorPosition()
+    #                 )
 
     def stop(self) -> None:
         self.front_left.stop()
@@ -162,11 +162,12 @@ back_right:  {self.back_right.get_position()}
         states: Tuple[
             SwerveModuleState, SwerveModuleState, SwerveModuleState, SwerveModuleState
         ],
+        isClosedLoop=False,
     ) -> None:
         fl, fr, bl, br = SwerveDrive4Kinematics.desaturateWheelSpeeds(
             states, SwerveConstants.kDriveMaxMetersPerSecond
         )
-        self.front_left.set_desired_state(fl)
-        self.front_right.set_desired_state(fr)
-        self.back_right.set_desired_state(bl)
-        self.back_left.set_desired_state(br)
+        self.front_left.set_desired_state(fl, isClosedLoop=isClosedLoop)
+        self.front_right.set_desired_state(fr, isClosedLoop=isClosedLoop)
+        self.back_right.set_desired_state(bl, isClosedLoop=isClosedLoop)
+        self.back_left.set_desired_state(br, isClosedLoop=isClosedLoop)
