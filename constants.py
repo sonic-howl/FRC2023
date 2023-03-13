@@ -78,7 +78,7 @@ class SwerveConstants:
     kDriveMaxAccelerationMetersPerSecond = 3.0
     kDriveMaxTurnAccelerationMetersPerSecond = 5.0
 
-    kPRobotTurn = 0.05
+    kPRobotTurn = 0.001
     kIRobotTurn = 0
     kDRobotTurn = 0
 

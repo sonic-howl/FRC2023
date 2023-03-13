@@ -11,7 +11,7 @@ from wpimath.kinematics import (
 )
 from wpimath.geometry import Rotation2d, Pose2d
 from wpimath.kinematics import SwerveDrive4Kinematics
-from wpilib import SPI
+from wpilib import SPI, Field2d, SmartDashboard
 from navx import AHRS
 from commands2 import SubsystemBase
 from .SwerveModule import SwerveModule
@@ -67,10 +67,13 @@ class SwerveSubsystem(SubsystemBase):
 
         Thread(target=reset_gyro).start()
 
+        self.field = Field2d()
+        SmartDashboard.putData("Field", self.field)
+
     def get_angle(self):
         # return self.gyro.getAngle() % 360
         # return self.gyro.getFusedHeading()
-        return self.gyro.getYaw()
+        return -self.gyro.getYaw()
 
     def get_rotation2d(self):
         return Rotation2d.fromDegrees(self.get_angle())
@@ -104,6 +107,8 @@ class SwerveSubsystem(SubsystemBase):
     # override
     def periodic(self) -> None:
         # TODO print gyro angle, robot pose on dashboard
+
+        self.field.setRobotPose(self.get_pose())
 
         self.odometer.update(
             self.get_rotation2d(),

@@ -69,8 +69,7 @@ class SwerveModule:
         self.turn_motor.restoreFactoryDefaults()
         self.turn_motor.setInverted(turn_motor_reversed)
         self.turn_motor.setIdleMode(rev.CANSparkMax.IdleMode.kCoast)
-        # TODO comment this and make kPTurning = 1
-        self.turn_motor.setOpenLoopRampRate(200 / 1000)  # ms
+        # self.turn_motor.setOpenLoopRampRate(200 / 1000)  # ms
         self.turn_motor.setSmartCurrentLimit(15)
         self.turn_motor.setSecondaryCurrentLimit(20)
 
@@ -171,43 +170,43 @@ class SwerveModule:
         )
 
     def set_desired_state(
-        self, state: SwerveModuleState, isClosedLoop=False, force_angle=False
+        self, state: SwerveModuleState, force_angle=False, isClosedLoop=False
     ) -> None:
-        if abs(state.speed) < 0.01:
-            if force_angle:
-                self.set_angle(state)
-            else:
-                self.stop()
+        if not force_angle and abs(state.speed) < 0.01:
+            self.stop()
             return
 
-        self.set_speed(state, isClosedLoop)
-        self.set_angle(state)
-
-    def set_speed(self, state: SwerveModuleState, isClosedLoop) -> None:
-        if isClosedLoop:
-            drive_speed = state.speed / 10 * SwerveConstants.kEncoderPositionPerMeter
-
-            # print(f"state speed: {state.speed}, drive speed: {drive_speed}")
-
-            self.drive_motor.set(
-                ctre.ControlMode.Velocity,
-                drive_speed,
-            )
-        else:
-            drive_speed = state.speed / SwerveConstants.kDriveMaxMetersPerSecond
-            self.drive_motor.set(drive_speed)
-
-    def set_angle(self, state: SwerveModuleState) -> None:
         state.angle += Rotation2d(self.chassis_angular_offset)
 
         current_angle = self.turn_encoder.getPosition()
 
         # optimize AFTER adding the chassis angular offset
-        optimized_state = SwerveModuleState.optimize(state, Rotation2d(current_angle))
+        state = SwerveModuleState.optimize(state, Rotation2d(current_angle))
 
-        self.turn_pid.setReference(
-            optimized_state.angle.radians(), rev.CANSparkMax.ControlType.kPosition
+        # # TODO make a drive velocity PID instead of scaling it this way
+        # drive_speed = state.speed / SwerveConstants.kDriveMaxMetersPerSecond
+        # drive_speed = scale_speed(drive_speed)
+        # self.drive_motor.set(drive_speed)
+
+        drive_speed = state.speed / 10 * SwerveConstants.kEncoderPositionPerMeter
+
+        # print(f"state speed: {state.speed}, drive speed: {drive_speed}")
+
+        self.drive_motor.set(
+            ctre.ControlMode.Velocity,
+            drive_speed,
         )
+
+        set_point = state.angle.radians()
+
+        # turn_speed = self.turn_pid.calculate(current_angle, set_point)
+        # turn_speed = scale_speed(turn_speed)
+
+        # self.angle_topic_pub.set(math.degrees(current_angle))
+        # self.drive_speed_topic_pub.set(drive_speed)
+
+        # self.turn_motor.set(turn_speed)
+        self.turn_pid.setReference(set_point, rev.CANSparkMax.ControlType.kPosition)
 
     def stop(self) -> None:
         self.drive_motor.stopMotor()

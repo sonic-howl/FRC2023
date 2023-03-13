@@ -44,7 +44,7 @@ class RobotContainer:
 
     controller = CommandXboxController(Constants.pilot_controller_id)
 
-    field_oriented = False
+    field_oriented = True
 
     right_stick_sets_angle = False
 
@@ -88,9 +88,6 @@ class RobotContainer:
         self.light_strip = LightStrip(Constants.light_strip_pwm_port)
         self.light_strip.setRainbowSlow()
 
-        self.field = Field2d()
-        SmartDashboard.putData("Field", self.field)
-
     def get_right_stick_sets_angle(self) -> bool:
         return self.right_stick_sets_angle
 
@@ -107,7 +104,6 @@ class RobotContainer:
         self.light_strip.update()
 
         self.swerve_subsystem.periodic()
-        self.field.setRobotPose(self.swerve_subsystem.get_pose())
 
         if self.controller.isConnected():
             if self.controller.getAButton():
@@ -233,6 +229,9 @@ class RobotContainer:
     def configure_button_bindings(self) -> None:
         if self.controller.isConnected():
             self.controller.X().onTrue(InstantCommand(self.toggle_field_oriented))
+            self.controller.Y().onTrue(
+                InstantCommand(self.swerve_subsystem.reset_gyro())
+            )
 
     def path_group_to_poses(
         self, path_group: List[PathPlannerTrajectory]

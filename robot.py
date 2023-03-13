@@ -57,7 +57,10 @@ class Robot(wp.TimedRobot):
             self.robot_container.swerve_subsystem.front_left.get_position().angle.degrees()
         )
 
-        CommandScheduler.getInstance().run()
+        try:
+            CommandScheduler.getInstance().run()
+        except Exception as e:
+            print_async("Caught exception:", e)
 
     def autonomousInit(self) -> None:
         # auto_command = self.robot_container.getAutonomousCommand()
