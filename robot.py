@@ -1,3 +1,7 @@
+from threading import Thread, Event
+
+from commands2 import CommandScheduler
+from utils import print_async
 import wpilib as wp
 
 # from subsystems.SwerveModule import SwerveModule
@@ -24,7 +28,7 @@ class Robot(wp.TimedRobot):
         # self.smartDashboard = NetworkTables.getTable("SmartDashboard")
         network_table_instance = NetworkTableInstance.getDefault()
         self.smartDashboard = network_table_instance.getTable("SmartDashboard")
-        self.gyroTopic = self.smartDashboard.getDoubleTopic("Gyro Angle").publish()
+        self.gyro_topic = self.smartDashboard.getDoubleTopic("Gyro Angle").publish()
         self.turner_topic = self.smartDashboard.getDoubleTopic("Turn Encoder").publish()
         # # create ps4 controller
         # self.controller = wp.PS4Controller(0)
@@ -39,10 +43,12 @@ class Robot(wp.TimedRobot):
         # testing
         # self.robot_container.buildPPAutonomousCommand()
 
-    def robotPeriodic(self) -> None:
-        self.robot_container.robotPeriodic()
+        self.swerve_auto_command = self.robot_container.swerve_auto_command
 
-        self.gyroTopic.set(self.robot_container.get_angle())
+    def robotPeriodic(self) -> None:
+        # self.robot_container.robotPeriodic()
+
+        self.gyro_topic.set(self.robot_container.get_angle())
 
         self.turner_topic.set(
             # self.robot_container.swerve_subsystem.front_left.turn_encoder.getPosition()
@@ -51,29 +57,31 @@ class Robot(wp.TimedRobot):
             self.robot_container.swerve_subsystem.front_left.get_position().angle.degrees()
         )
 
-        # try:
-        #     CommandScheduler.getInstance().run()
-        # except:
-        #     print("CommandScheduler error")
+        CommandScheduler.getInstance().run()
 
     def autonomousInit(self) -> None:
         # auto_command = self.robot_container.getAutonomousCommand()
         # if auto_command is not None:
         #     auto_command.schedule()
         #     print("Auto command scheduled")
-        self.robot_container.autonomousInit()
+        # self.robot_container.autonomousInit()
 
-    def autonomousPeriodic(self) -> None:
-        self.robot_container.autonomousPeriodic()
+        self.swerve_auto_command.schedule()
 
-    def teleopPeriodic(self) -> None:
-        self.robot_container.teleopPeriodic()
+    def autonomousExit(self) -> None:
+        self.swerve_auto_command.cancel()
 
-        # TODO maybe stop the auto command here if executing the swerve drive command doesn't stop it.
-        # There may not need to be any teleop code here if everything uses commands.
-        # The commands are run using the command scheduler which is run in robotPeriodic.
-        # The CommandScheduler automatically runs the appropriate code depending on the state of the competition (disabled, autonomous, teleoperated).
-        pass
+    # def autonomousPeriodic(self) -> None:
+    #     self.robot_container.autonomousPeriodic()
+
+    # def teleopPeriodic(self) -> None:
+    #     self.robot_container.teleopPeriodic()
+
+    #     # TODO maybe stop the auto command here if executing the swerve drive command doesn't stop it.
+    #     # There may not need to be any teleop code here if everything uses commands.
+    #     # The commands are run using the command scheduler which is run in robotPeriodic.
+    #     # The CommandScheduler automatically runs the appropriate code depending on the state of the competition (disabled, autonomous, teleoperated).
+    #     pass
 
 
 if __name__ == "__main__":

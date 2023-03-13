@@ -1,6 +1,7 @@
 from typing import List
 from LightStrip import LightStrip
 
+from photonvision import PhotonCamera, LEDMode, RobotPoseEstimator
 from wpilib import Field2d, SmartDashboard
 from commands.SwerveAutoCommand import SwerveAutoCommand
 from pathplannerlib import PathPlanner, PathConstraints, PathPlannerTrajectory
@@ -47,18 +48,19 @@ class RobotContainer:
 
     right_stick_sets_angle = False
 
+    photon_camera = PhotonCamera("photonvision")
+
     def __init__(self) -> None:
         self.configure_button_bindings()
 
-        # if self.controller.isConnected():
-        #     self.swerve_subsystem.setDefaultCommand(
-        #         SwerveCommand(
-        #             self.swerve_subsystem,
-        #             self.controller,
-        #             self.get_right_stick_sets_angle,
-        #             self.get_field_oriented,
-        #         )
-        #     )
+        self.swerve_subsystem.setDefaultCommand(
+            SwerveCommand(
+                self.swerve_subsystem,
+                self.controller,
+                self.get_right_stick_sets_angle,
+                self.get_field_oriented,
+            )
+        )
 
         self.x_limiter = SlewRateLimiter(
             SwerveConstants.kDriveMaxAccelerationMetersPerSecond
@@ -95,11 +97,21 @@ class RobotContainer:
     def get_angle(self):
         return self.swerve_subsystem.get_angle()
 
+    def vision_track(self):
+        if self.photon_camera.hasTargets():
+            target = self.photon_camera.getLatestResult().getBestTarget()
+            transform_to_target = target.getBestCameraToTarget()
+            # TODO
+
     def robotPeriodic(self):
         self.light_strip.update()
 
         self.swerve_subsystem.periodic()
         self.field.setRobotPose(self.swerve_subsystem.get_pose())
+
+        if self.controller.isConnected():
+            if self.controller.getAButton():
+                self.vision_track()
 
     def teleopPeriodic(self) -> None:
         if not self.controller.isConnected():
@@ -118,89 +130,89 @@ class RobotContainer:
         if self.controller.getYButtonPressed():
             self.toggle_field_oriented()
 
-        # reversing x and y controller -> field axes. x is forwards, y is strafe
-        # normally axis 0 is x.
-        x = dz(-self.controller.getRawAxis(1))
-        y = dz(-self.controller.getRawAxis(0))
+        # # reversing x and y controller -> field axes. x is forwards, y is strafe
+        # # normally axis 0 is x.
+        # x = dz(-self.controller.getRawAxis(1))
+        # y = dz(-self.controller.getRawAxis(0))
 
-        # x = self.x_limiter.calculate(x)
-        # y = self.y_limiter.calculate(y)
+        # # x = self.x_limiter.calculate(x)
+        # # y = self.y_limiter.calculate(y)
 
-        chassis_speeds: ChassisSpeeds | None = None
-        if self.get_right_stick_sets_angle():
-            rx = dz(self.controller.getRawAxis(4))
-            ry = dz(self.controller.getRawAxis(5))
+        # chassis_speeds: ChassisSpeeds | None = None
+        # if self.get_right_stick_sets_angle():
+        #     rx = dz(self.controller.getRawAxis(4))
+        #     ry = dz(self.controller.getRawAxis(5))
 
-            magnitude = abs(rx) + abs(ry)
+        #     magnitude = abs(rx) + abs(ry)
 
-            if magnitude > 0.25:
-                rotation2d = Rotation2d(rx, ry)
+        #     if magnitude > 0.25:
+        #         rotation2d = Rotation2d(rx, ry)
 
-                current_robot_angle = self.swerve_subsystem.get_angle()
+        #         current_robot_angle = self.swerve_subsystem.get_angle()
 
-                print(current_robot_angle, rotation2d.degrees())
+        #         print(current_robot_angle, rotation2d.degrees())
 
-                rotation_speed = self.rotate_to_angle_pid.calculate(
-                    current_robot_angle, rotation2d.degrees()
-                )
+        #         rotation_speed = self.rotate_to_angle_pid.calculate(
+        #             current_robot_angle, rotation2d.degrees()
+        #         )
 
-                chassis_speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                    x * SwerveConstants.kDriveMaxMetersPerSecond,
-                    y * SwerveConstants.kDriveMaxMetersPerSecond,
-                    rotation_speed,
-                    self.swerve_subsystem.get_rotation2d(),
-                )
+        #         chassis_speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+        #             x * SwerveConstants.kDriveMaxMetersPerSecond,
+        #             y * SwerveConstants.kDriveMaxMetersPerSecond,
+        #             rotation_speed,
+        #             self.swerve_subsystem.get_rotation2d(),
+        #         )
 
-            # print("SwerveCommand chassis_speeds: ", chassis_speeds)
-        elif self.get_field_oriented():
-            # z = dz(self.controller.getRightX())
-            z = self.controller.getRawAxis(4)
-            z = (dz(z) ** 2) * sign(z)
-            z = self.z_limiter.calculate(z)
-            chassis_speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                x * SwerveConstants.kDriveMaxMetersPerSecond,
-                y * SwerveConstants.kDriveMaxMetersPerSecond,
-                z,
-                self.swerve_subsystem.get_rotation2d(),
-            )
-        else:
-            z = -self.controller.getRawAxis(4)
-            z = (dz(z) ** 2) * sign(z)
-            magnitude = abs(x) + abs(y) + abs(z)
-            if magnitude > 0.05:
-                # z = self.z_limiter.calculate(z) # TODO
-                # chassis_speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                #     x * SwerveConstants.kDriveMaxMetersPerSecond,
-                #     y * SwerveConstants.kDriveMaxMetersPerSecond,
-                #     z,
-                #     self.robot_angle_offset,
-                # )
-                chassis_speeds = ChassisSpeeds(
-                    x * SwerveConstants.kDriveMaxMetersPerSecond,
-                    y * SwerveConstants.kDriveMaxMetersPerSecond,
-                    z,
-                )
+        #     # print("SwerveCommand chassis_speeds: ", chassis_speeds)
+        # elif self.get_field_oriented():
+        #     # z = dz(self.controller.getRightX())
+        #     z = self.controller.getRawAxis(4)
+        #     z = (dz(z) ** 2) * sign(z)
+        #     z = self.z_limiter.calculate(z)
+        #     chassis_speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+        #         x * SwerveConstants.kDriveMaxMetersPerSecond,
+        #         y * SwerveConstants.kDriveMaxMetersPerSecond,
+        #         z,
+        #         self.swerve_subsystem.get_rotation2d(),
+        #     )
+        # else:
+        #     z = -self.controller.getRawAxis(4)
+        #     z = (dz(z) ** 2) * sign(z)
+        #     magnitude = abs(x) + abs(y) + abs(z)
+        #     if magnitude > 0.05:
+        #         # z = self.z_limiter.calculate(z) # TODO
+        #         # chassis_speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+        #         #     x * SwerveConstants.kDriveMaxMetersPerSecond,
+        #         #     y * SwerveConstants.kDriveMaxMetersPerSecond,
+        #         #     z,
+        #         #     self.robot_angle_offset,
+        #         # )
+        #         chassis_speeds = ChassisSpeeds(
+        #             x * SwerveConstants.kDriveMaxMetersPerSecond,
+        #             y * SwerveConstants.kDriveMaxMetersPerSecond,
+        #             z,
+        #         )
 
-        if chassis_speeds:
-            swerve_module_states = (
-                SwerveConstants.kDriveKinematics.toSwerveModuleStates(chassis_speeds)
-            )
+        # if chassis_speeds:
+        #     swerve_module_states = (
+        #         SwerveConstants.kDriveKinematics.toSwerveModuleStates(chassis_speeds)
+        #     )
 
-            # if (
-            #     abs(chassis_speeds.vx) > 0
-            #     or abs(chassis_speeds.vy) > 0
-            #     or abs(chassis_speeds.omega) > 0
-            # ):
-            #     print_async(
-            #         chassis_speeds,
-            #         "SwerveCommand swerve_module_states: ",
-            #         swerve_module_states,
-            #     )
-            # print_async(self.swerve_subsystem.get_pose())
+        #     # if (
+        #     #     abs(chassis_speeds.vx) > 0
+        #     #     or abs(chassis_speeds.vy) > 0
+        #     #     or abs(chassis_speeds.omega) > 0
+        #     # ):
+        #     #     print_async(
+        #     #         chassis_speeds,
+        #     #         # "SwerveCommand swerve_module_states: ",
+        #     #         # swerve_module_states,
+        #     #     )
+        #     # print_async(self.swerve_subsystem.get_pose())
 
-            self.swerve_subsystem.set_module_states(swerve_module_states)
-        else:
-            self.swerve_subsystem.stop()
+        #     self.swerve_subsystem.set_module_states(swerve_module_states)
+        # else:
+        #     self.swerve_subsystem.stop()
 
     def autonomousInit(self):
         self.swerve_auto_command.initialize()

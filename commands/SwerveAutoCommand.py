@@ -1,4 +1,6 @@
 from typing import Callable, Dict, List
+
+from commands2 import Command
 from utils import print_async
 
 import wpilib
@@ -115,8 +117,10 @@ class PathTraverser:
         self.stop_event_callbacks.append(func)
 
 
-class SwerveAutoCommand:
+class SwerveAutoCommand(Command):
     def __init__(self, swerve_subsystem: SwerveSubsystem) -> None:
+        super().__init__()
+
         self.swerve_subsystem = swerve_subsystem
 
         # TODO
@@ -168,6 +172,7 @@ class SwerveAutoCommand:
         # )
 
     # def move_to_state(self, state: Trajectory.State):
+
     def move_to_state(self, state: PathPlannerTrajectory.PathPlannerState):
         chassis_speeds = self.controller.calculate(
             self.swerve_subsystem.get_pose(),

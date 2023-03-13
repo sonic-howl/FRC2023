@@ -24,7 +24,7 @@ class Constants:
 
     robot_angle_offset = math.pi / 2
 
-    light_strip_pwm_port = 0
+    light_strip_pwm_port = 1
 
 
 class SwerveConstants:
