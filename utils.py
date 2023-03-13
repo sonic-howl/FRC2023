@@ -1,5 +1,7 @@
 from threading import Thread
 
+from constants import SwerveConstants
+
 
 def print_async(*args, **kwargs) -> None:
     """print in a new thread"""
@@ -25,14 +27,13 @@ def MPSToFalcon(velocity: float, circumference: float, gearRatio: float) -> floa
     return wheelVelocity
 
 
-import math
-from constants import SwerveConstants
+def falconToMeters(
+    positionCounts: float, circumference: float, gearRatio: float
+) -> float:
+    """convert falcon encoder units per 100ms to meters"""
+    return positionCounts * (circumference / (gearRatio * 2048.0))
 
-print(
-    "MPSToFalcon",
-    MPSToFalcon(
-        4,
-        SwerveConstants.kWheelCircumferenceMeters,
-        SwerveConstants.kDrivingMotorReduction,
-    ),
-)
+
+def MetersToFalcon(meters: float, circumference: float, gearRatio: float) -> float:
+    """convert meters to falcon encoder units per 100ms"""
+    return meters / (circumference / (gearRatio * 2048.0))
