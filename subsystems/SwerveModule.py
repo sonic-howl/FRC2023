@@ -69,8 +69,7 @@ class SwerveModule:
         self.turn_motor.restoreFactoryDefaults()
         self.turn_motor.setInverted(turn_motor_reversed)
         self.turn_motor.setIdleMode(rev.CANSparkMax.IdleMode.kCoast)
-        # TODO comment this and make kPTurning = 1
-        self.turn_motor.setOpenLoopRampRate(200 / 1000)  # ms
+        # self.turn_motor.setOpenLoopRampRate(200 / 1000)  # ms
         self.turn_motor.setSmartCurrentLimit(15)
         self.turn_motor.setSecondaryCurrentLimit(20)
 
