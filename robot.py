@@ -40,6 +40,7 @@ class Robot(wp.TimedRobot):
         # self.turn.set(motorturnSpeed)
         armspeed = -self.controller.getLeftY()
         self.armmotor.set(ctre.ControlMode.PercentOutput,armspeed)
+        print("arm sensor value",self.armmotor.getSelectedSensorPosition())
 
 
 
