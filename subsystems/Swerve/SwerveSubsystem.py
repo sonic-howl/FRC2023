@@ -4,7 +4,7 @@ from time import sleep
 from typing import Tuple
 
 import wpilib
-from utils import print_async
+from utils.utils import printAsync
 from wpimath.kinematics import (
     SwerveModuleState,
     SwerveDrive4Odometry,
@@ -50,10 +50,10 @@ class SwerveSubsystem(SubsystemBase):
         SwerveConstants.kDriveKinematics,
         Rotation2d(),
         (
-            front_left.get_position(),
-            front_right.get_position(),
-            back_left.get_position(),
-            back_right.get_position(),
+            front_left.getPosition(),
+            front_right.getPosition(),
+            back_left.getPosition(),
+            back_right.getPosition(),
         ),
     )
 
@@ -67,18 +67,18 @@ class SwerveSubsystem(SubsystemBase):
 
         Thread(target=reset_gyro).start()
 
-        self.field = Field2d()
-        SmartDashboard.putData("Field", self.field)
+        # self.field = Field2d()
+        # SmartDashboard.putData("Field", self.field)
 
-    def get_angle(self):
+    def getAngle(self):
         # return self.gyro.getAngle() % 360
         # return self.gyro.getFusedHeading()
         return -self.gyro.getYaw()
 
-    def get_rotation2d(self):
-        return Rotation2d.fromDegrees(self.get_angle())
+    def getRotation2d(self):
+        return Rotation2d.fromDegrees(self.getAngle())
 
-    def get_pose(self) -> Pose2d:
+    def getPose(self) -> Pose2d:
         return self.odometer.getPose()
 
     def reset_gyro(self):
@@ -86,19 +86,19 @@ class SwerveSubsystem(SubsystemBase):
         self.gyro.zeroYaw()
 
     def reset_motor_positions(self):
-        self.front_left.reset_encoders()
-        self.front_right.reset_encoders()
-        self.back_left.reset_encoders()
-        self.back_right.reset_encoders()
+        self.front_left.resetEncoders()
+        self.front_right.resetEncoders()
+        self.back_left.resetEncoders()
+        self.back_right.resetEncoders()
 
-    def reset_odometer(self, pose: Pose2d = Pose2d()):
+    def resetOdometer(self, pose: Pose2d = Pose2d()):
         self.odometer.resetPosition(
-            self.get_rotation2d(),
+            self.getRotation2d(),
             pose,
-            self.front_left.get_position(),
-            self.front_right.get_position(),
-            self.back_left.get_position(),
-            self.back_right.get_position(),
+            self.front_left.getPosition(),
+            self.front_right.getPosition(),
+            self.back_left.getPosition(),
+            self.back_right.getPosition(),
         )
 
     temp_timer = wpilib.Timer()
@@ -108,14 +108,14 @@ class SwerveSubsystem(SubsystemBase):
     def periodic(self) -> None:
         # TODO print gyro angle, robot pose on dashboard
 
-        self.field.setRobotPose(self.get_pose())
+        # self.field.setRobotPose(self.getPose())
 
         self.odometer.update(
-            self.get_rotation2d(),
-            self.front_left.get_position(),
-            self.front_right.get_position(),
-            self.back_left.get_position(),
-            self.back_right.get_position(),
+            self.getRotation2d(),
+            self.front_left.getPosition(),
+            self.front_right.getPosition(),
+            self.back_left.getPosition(),
+            self.back_right.getPosition(),
         )
 
     #         self.temp_timer.start()
@@ -149,20 +149,20 @@ class SwerveSubsystem(SubsystemBase):
         self.back_right.stop()
 
     def setX(self) -> None:
-        self.front_left.set_desired_state(
+        self.front_left.setDesiredState(
             SwerveModuleState(0, Rotation2d.fromDegrees(-45)), True
         )
-        self.front_right.set_desired_state(
+        self.front_right.setDesiredState(
             SwerveModuleState(0, Rotation2d.fromDegrees(45)), True
         )
-        self.back_left.set_desired_state(
+        self.back_left.setDesiredState(
             SwerveModuleState(0, Rotation2d.fromDegrees(45)), True
         )
-        self.back_right.set_desired_state(
+        self.back_right.setDesiredState(
             SwerveModuleState(0, Rotation2d.fromDegrees(-45)), True
         )
 
-    def set_module_states(
+    def setModuleStates(
         self,
         states: Tuple[
             SwerveModuleState, SwerveModuleState, SwerveModuleState, SwerveModuleState
@@ -172,7 +172,7 @@ class SwerveSubsystem(SubsystemBase):
         fl, fr, bl, br = SwerveDrive4Kinematics.desaturateWheelSpeeds(
             states, SwerveConstants.kDriveMaxMetersPerSecond
         )
-        self.front_left.set_desired_state(fl, isClosedLoop=isClosedLoop)
-        self.front_right.set_desired_state(fr, isClosedLoop=isClosedLoop)
-        self.back_right.set_desired_state(bl, isClosedLoop=isClosedLoop)
-        self.back_left.set_desired_state(br, isClosedLoop=isClosedLoop)
+        self.front_left.setDesiredState(fl, isClosedLoop=isClosedLoop)
+        self.front_right.setDesiredState(fr, isClosedLoop=isClosedLoop)
+        self.back_right.setDesiredState(bl, isClosedLoop=isClosedLoop)
+        self.back_left.setDesiredState(br, isClosedLoop=isClosedLoop)

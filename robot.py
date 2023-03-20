@@ -1,7 +1,7 @@
 from threading import Thread, Event
 
 from commands2 import CommandScheduler
-from utils import print_async
+from utils.utils import printAsync
 import wpilib as wp
 
 # from subsystems.SwerveModule import SwerveModule
@@ -54,13 +54,13 @@ class Robot(wp.TimedRobot):
             # self.robot_container.swerve_subsystem.front_left.turn_encoder.getPosition()
             # % math.pi
             # * 2
-            self.robot_container.swerve_subsystem.front_left.get_position().angle.degrees()
+            self.robot_container.swerve_subsystem.front_left.getPosition().angle.degrees()
         )
 
         try:
             CommandScheduler.getInstance().run()
         except Exception as e:
-            print_async("Caught exception:", e)
+            printAsync("Caught exception:", e)
 
     def autonomousInit(self) -> None:
         # auto_command = self.robot_container.getAutonomousCommand()

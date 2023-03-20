@@ -8,7 +8,7 @@ import math
 from constants import FalconConstants, SwerveConstants, Constants
 
 
-def scale_speed(speed: float) -> float:
+def scaleSpeed(speed: float) -> float:
     speed *= Constants.scale_speed
     if speed > Constants.max_speed:
         speed = Constants.max_speed
@@ -107,11 +107,13 @@ class SwerveModule:
         # self.turn_pid.enableContinuousInput(-math.pi, math.pi)
         # self.turn_pid.setTolerance(math.radians(SwerveConstants.kTurningToleranceDeg))
 
-        self.reset_encoders()
+        self.resetEncoders()
 
-        self.init_network_tables()
+        self.initNetworkTables()
 
-    def init_network_tables(self):
+        self.lastDesiresState = self.getState()
+
+    def initNetworkTables(self):
         network_table_instance = NetworkTableInstance.getDefault()
         self.swerve_dashboard = network_table_instance.getTable(
             SwerveConstants.swerveDashboardName
@@ -147,29 +149,29 @@ class SwerveModule:
         # self.turn_kD.set(SwerveConstants.kDTurning)
         # self.turn_kD_sub = self.turn_kD_topic.subscribe(0)
 
-    def reset_encoders(self) -> None:
+    def resetEncoders(self) -> None:
         self.drive_motor.setSelectedSensorPosition(0)
 
-    def get_rotation(self) -> Rotation2d:
+    def getRotation(self) -> Rotation2d:
         return Rotation2d(self.turn_encoder.getPosition() - self.chassis_angular_offset)
 
-    def get_state(self) -> SwerveModuleState:
-        return SwerveModuleState(
-            speed=self.drive_motor.getSelectedSensorVelocity(),
-            angle=self.get_rotation(),
-        )
-
-    def get_position(self) -> SwerveModulePosition:
+    def getPosition(self) -> SwerveModulePosition:
         return SwerveModulePosition(
             # distance=sensor_pos / SwerveConstants.kEncoderPositionPerMeter,
             distance=self.drive_motor.getSelectedSensorPosition()
             / SwerveConstants.kEncoderPositionPerMeter,
             # distance=self.drive_motor.getSelectedSensorPosition()
             # / SwerveConstants.kEncoderPositionPerMeter,
-            angle=self.get_rotation(),
+            angle=self.getRotation(),
         )
 
-    def set_desired_state(
+    def getState(self) -> SwerveModuleState:
+        return SwerveModuleState(
+            speed=self.drive_motor.getSelectedSensorVelocity(),
+            angle=self.getRotation(),
+        )
+
+    def setDesiredState(
         self, state: SwerveModuleState, force_angle=False, isClosedLoop=False
     ) -> None:
         if not force_angle and abs(state.speed) < 0.01:
@@ -207,6 +209,8 @@ class SwerveModule:
 
         # self.turn_motor.set(turn_speed)
         self.turn_pid.setReference(set_point, rev.CANSparkMax.ControlType.kPosition)
+
+        self.lastDesiresState = state
 
     def stop(self) -> None:
         self.drive_motor.stopMotor()

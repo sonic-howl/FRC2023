@@ -17,14 +17,29 @@ class Constants:
 
     controller_deadzone = 0.05
     pilot_controller_id = 0
-    copilot_controller_id = 1
+    operator_controller_id = 1
 
     frame_width = 28
     frame_length = 32
 
-    robot_angle_offset = math.pi / 2
-
     light_strip_pwm_port = 1
+
+
+class ArmConstants:
+    kArmReduction = 20  # TODO change
+    kClawReduction = 10  # TODO change
+
+    kClawP = 0.1
+    kClawI = 0
+    kClawIz = 0
+    kClawD = 0
+    kClawFF = 0
+
+    kArmP = 0.1
+    kArmI = 0
+    kArmIz = 0
+    kArmD = 0
+    kArmFF = 0
 
 
 class SwerveConstants:
@@ -74,7 +89,7 @@ class SwerveConstants:
     kDTurning = 0
 
     # TODO calibrate
-    kDriveMaxMetersPerSecond = 4.0
+    kDriveMaxMetersPerSecond = 5.15
     kDriveMaxAccelerationMetersPerSecond = 3.0
     kDriveMaxTurnAccelerationMetersPerSecond = 5.0
 
