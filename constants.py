@@ -1,3 +1,4 @@
+from enum import Enum
 import math
 from wpimath.kinematics import SwerveDrive4Kinematics
 from wpimath.geometry import Translation2d
@@ -26,20 +27,124 @@ class Constants:
 
 
 class ArmConstants:
-    kArmReduction = 20  # TODO change
-    kClawReduction = 10  # TODO change
+    class GamePieceType(Enum):
+        kCone = 0
+        kCube = 1
+        kEmpty = 2
 
-    kClawP = 0.1
-    kClawI = 0
-    kClawIz = 0
-    kClawD = 0
-    kClawFF = 0
+    class AngleType(Enum):
+        kStow = 0
+        kFloor = 1
+        kGridS1 = 2
+        kGridS2 = 3
+        kGridS3 = 4
 
-    kArmP = 0.1
-    kArmI = 0
-    kArmIz = 0
-    kArmD = 0
-    kArmFF = 0
+    class SubsystemType(Enum):
+        kArm = 0
+        kClaw = 1
+
+    angles: dict[GamePieceType, dict[AngleType, dict[SubsystemType, float]]] = {
+        GamePieceType.kCone: {
+            AngleType.kStow: {
+                SubsystemType.kArm: 0,
+                SubsystemType.kClaw: 0,
+            },
+            AngleType.kFloor: {
+                SubsystemType.kArm: 45,
+                SubsystemType.kClaw: 90,
+            },
+            AngleType.kGridS1: {
+                SubsystemType.kArm: 60,
+                SubsystemType.kClaw: 90,
+            },
+            AngleType.kGridS2: {
+                SubsystemType.kArm: 80,
+                SubsystemType.kClaw: 90,
+            },
+            AngleType.kGridS3: {
+                SubsystemType.kArm: 100,
+                SubsystemType.kClaw: 100,
+            },
+        },
+        GamePieceType.kCube: {
+            AngleType.kStow: {
+                SubsystemType.kArm: 0,
+                SubsystemType.kClaw: 0,
+            },
+            AngleType.kFloor: {
+                SubsystemType.kArm: 45,
+                SubsystemType.kClaw: 90,
+            },
+            AngleType.kGridS1: {
+                SubsystemType.kArm: 60,
+                SubsystemType.kClaw: 90,
+            },
+            AngleType.kGridS2: {
+                SubsystemType.kArm: 80,
+                SubsystemType.kClaw: 90,
+            },
+            AngleType.kGridS3: {
+                SubsystemType.kArm: 100,
+                SubsystemType.kClaw: 100,
+            },
+        },
+        GamePieceType.kEmpty: {
+            AngleType.kStow: {
+                SubsystemType.kArm: 0,
+                SubsystemType.kClaw: 0,
+            },
+            AngleType.kFloor: {
+                SubsystemType.kArm: 45,
+                SubsystemType.kClaw: 90,
+            },
+            AngleType.kGridS1: {
+                SubsystemType.kArm: 60,
+                SubsystemType.kClaw: 90,
+            },
+            AngleType.kGridS2: {
+                SubsystemType.kArm: 80,
+                SubsystemType.kClaw: 90,
+            },
+            AngleType.kGridS3: {
+                SubsystemType.kArm: 100,
+                SubsystemType.kClaw: 100,
+            },
+        },
+    }
+
+    class Arm:
+        kCANId = 10
+        kConversionFactor = 0.5532  # TODO change
+        kMaxVelocityRPM = 2000  # TODO calibrate
+        kMaxAccelerationRPM = 1500  # TODO calibrate
+
+        kP = 0  # TODO this may have to be non-zero for smart motion to work
+        kI = 0
+        kIz = 0
+        kD = 0
+        kFF = 0
+        # TODO calibrate
+        kS = 0.05
+        kG = 3.34
+        kV = 0.47
+        kA = 0.55
+
+    class Claw:
+        kCANId = 11
+        kConversionFactor = 10  # TODO change
+        kMaxVelocityRPM = 1000  # TODO calibrate
+        kMaxAccelerationRPM = 500  # TODO calibrate
+
+        kP = 0
+        kI = 0
+        kIz = 0
+        kD = 0
+        kFF = 0
+        # TODO calibrate
+        kS = 0
+        kG = 9.04
+        kV = 0.10
+        kA = 0.23
 
 
 class SwerveConstants:
