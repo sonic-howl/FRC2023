@@ -1,82 +1,73 @@
-import ctre
+from typing import Type
+import math
+
 import rev
+from commands2 import SubsystemBase
+from wpimath.controller import ArmFeedforward
 
-from commands2 import SubsystemBase, ProfiledPIDSubsystem
-
-from utils.conversions import Conversions
-from constants import ArmConstants
+from constants import ArmConstants, Constants
 
 
 class ArmSubsystem(SubsystemBase):
-    def __init__(self) -> None:
+    def __init__(self, constants: Type[ArmConstants.Arm | ArmConstants.Claw]) -> None:
         super().__init__()
 
-        self.arm_motor = ctre.WPI_TalonSRX(10)
-        self.arm_motor.setInverted(True)
-        self.arm_motor.config_kP(0, ArmConstants.kArmP)
-        self.arm_motor.config_kI(0, ArmConstants.kArmI)
-        self.arm_motor.config_kD(0, ArmConstants.kArmD)
-        self.arm_motor.config_kF(0, ArmConstants.kArmFF)
+        # arm
+        self.armMotor = rev.CANSparkMax(
+            constants.kCANId, rev.CANSparkMax.MotorType.kBrushed
+        )
+        self.armMotor.restoreFactoryDefaults()
+        self.armMotor.setOpenLoopRampRate(0.5)
+        self.armMotor.setIdleMode(rev.CANSparkMax.IdleMode.kBrake)
+        # PID setup (not used)
+        self.armPID = self.armMotor.getPIDController()
+        self.armPID.setOutputRange(-Constants.max_speed, Constants.max_speed)
+        self.armPID.setP(constants.kP)
+        self.armPID.setI(constants.kI)
+        self.armPID.setD(constants.kD)
+        self.armPID.setIZone(constants.kIz)
+        self.armPID.setFF(constants.kFF)
+        # Smart Motion setup
+        self.armPID.setSmartMotionMinOutputVelocity(0)
+        self.armPID.setSmartMotionMaxVelocity(constants.kMaxVelocityRPM)
+        self.armPID.setSmartMotionMaxAccel(constants.kMaxAccelerationRPM)
+        self.armPID.setSmartMotionAccelStrategy(
+            rev.SparkMaxPIDController.AccelStrategy.kSCurve
+        )
+        self.armPID.setSmartMotionAllowedClosedLoopError(0)
+        # Arm encoder setup
+        self.armEncoder = self.armMotor.getEncoder(
+            rev.SparkMaxRelativeEncoder.Type.kQuadrature, 1024
+        )
+        self.armEncoder.setPositionConversionFactor(constants.kConversionFactor)
+        self.armEncoder.setVelocityConversionFactor(constants.kConversionFactor / 60)
+        self.armMotor.burnFlash()
 
-        self.claw_motor = rev.CANSparkMax(11, rev.CANSparkMax.MotorType.kBrushless)
-        self.claw_motor.setInverted(True)
-        self.claw_pid = self.claw_motor.getPIDController()
-        # self.claw_pid.setP(ArmConstants.kClawP)
-        # self.claw_pid.setI(ArmConstants.kClawI)
-        # self.claw_pid.setD(ArmConstants.kClawD)
-        # self.claw_pid.setIZone(ArmConstants.kClawIz)
-        # self.claw_pid.setFF(ArmConstants.kClawFF)
-        # self.claw_pid.setOutputRange(-1, 1)
-        self.claw_encoder = self.claw_motor.getEncoder()
-        # TODO
-        # self.claw_encoder.setPositionConversionFactor()
-
-    def getArmAngle(self):
-        # return self.arm_motor.getSelectedSensorPosition() * 360 / 4096
-        # return self.arm_motor.getSelectedSensorPosition() * 360 / 4096
-        return Conversions.falconToDegrees(
-            self.arm_motor.getSelectedSensorPosition(), ArmConstants.kArmReduction
+        self.armFF = ArmFeedforward(
+            constants.kS,
+            constants.kG,
+            constants.kV,
+            constants.kA,
         )
 
-    def getClawAngle(self):
-        """Returns the angle of the claw added to the angle of the arm to get the total angle of the claw"""
-        return self.claw_encoder.getPosition() + self.getArmAngle()
+    def setAngle(self, angle: float):
+        """
+        Sets the angle of the arm in degrees.
+        :param angle: The angle to set the arm to in degrees.
+        :param ffVoltage: The feedforward voltage to apply to the arm.
+        """
 
-    def setArmAngle(self, angle: float):
-        # self.arm_motor.set(ctre.ControlMode.Position, angle * 4096 / 360)
-        # self.arm_motor.set(
-        #     ctre.ControlMode.Position,
-        #     Conversions.degreesToFalcon(angle, ArmConstants.kArmReduction),
-        #     ctre.DemandType.ArbitraryFeedForward,
-        #     # ArmConstants.kArmFF,
-        #     0,  # TODO get feedforward from wpilib ArmFeedForward class
-        # )
-        self.arm_motor.set(
-            ctre.ControlMode.MotionMagic,
-            Conversions.degreesToFalcon(angle, ArmConstants.kArmReduction),
-            ctre.DemandType.ArbitraryFeedForward,
-            # ArmConstants.kArmFF,
-            0,  # TODO get feedforward from wpilib ArmFeedForward class
+        # TODO: maybe calculate acceleration too?
+        velocity = self.armEncoder.getVelocity()
+        ffVoltage = self.armFF.calculate(math.radians(angle), velocity)
+
+        self.armPID.setReference(
+            angle, rev.CANSparkMax.ControlType.kSmartMotion, arbFeedforward=ffVoltage
         )
 
-    def setClawAngle(self, angle: float):
-        # self.claw_pid.setReference(
-        #     angle,
-        #     rev.CANSparkMax.ControlType.kPosition,
-        #     0,
-        #     ArmConstants.kClawFF,  # TODO get feedforward from wpilib ArmFeedForward class
-        # )
-        self.claw_pid.setReference(
-            angle,
-            rev.CANSparkMax.ControlType.kSmartMotion,
-            0,
-            ArmConstants.kClawFF,  # TODO get feedforward from wpilib ArmFeedForward class
-        )
-
-    def setClawXY(self, x: float, y: float):
-        # TODO this is probably not needed
-        pass
-
-    def stow(self):
-        self.setArmAngle(0)
-        self.setClawAngle(0)
+    def getAngle(self):
+        """
+        Gets the angle of the arm in degrees.
+        :return: The angle of the arm in degrees.
+        """
+        return self.armEncoder.getPosition() % 360
