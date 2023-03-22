@@ -20,6 +20,16 @@
         "header": {
           "open": true
         }
+      },
+      "Talon FX[2]": {
+        "header": {
+          "open": true
+        }
+      },
+      "navX-Sensor[2]": {
+        "header": {
+          "open": true
+        }
       }
     }
   },

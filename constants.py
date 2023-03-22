@@ -1,5 +1,6 @@
 from enum import Enum
 import math
+import wpilib
 from wpimath.kinematics import SwerveDrive4Kinematics
 from wpimath.geometry import Translation2d
 
@@ -14,6 +15,8 @@ class Constants:
     max_speed = 0.15
     scale_speed = 0.15
 
+    isSimulation = False
+
     period = 0.02
 
     controller_deadzone = 0.05
@@ -24,6 +27,8 @@ class Constants:
     frame_length = 32
 
     light_strip_pwm_port = 1
+
+    navxPort = wpilib.SerialPort.Port.kUSB
 
 
 class ArmConstants:
@@ -196,6 +201,7 @@ class SwerveConstants:
     # TODO calibrate
     kDriveMaxMetersPerSecond = 5.15
     kDriveMaxAccelerationMetersPerSecond = 3.0
+    kDriveMaxTurnMetersPerSecond = 8.0
     kDriveMaxTurnAccelerationMetersPerSecond = 5.0
 
     kPRobotTurn = 0.001

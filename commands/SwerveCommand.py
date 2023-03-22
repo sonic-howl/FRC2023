@@ -14,16 +14,16 @@ from controllers.pilot import PilotController
 class SwerveCommand(Command):
     def __init__(
         self,
-        swerve_subsystem: SwerveSubsystem,
+        swerveSubsystem: SwerveSubsystem,
         controller: PilotController,
-        get_field_oriented: Callable[[], bool],
+        getFieldOriented: Callable[[], bool],
     ) -> None:
         super().__init__()
 
-        self.swerve_subsystem = swerve_subsystem
+        self.swerveSubsystem = swerveSubsystem
 
         self.controller = controller
-        self.get_field_oriented = get_field_oriented
+        self.get_field_oriented = getFieldOriented
 
         self.xLimiter = SlewRateLimiter(
             SwerveConstants.kDriveMaxAccelerationMetersPerSecond
@@ -45,7 +45,7 @@ class SwerveCommand(Command):
         self.rotate_to_angle_pid.setTolerance(5)  # degrees tolerance
 
     def getRequirements(self) -> Set[Subsystem]:
-        return {self.swerve_subsystem}
+        return {self.swerveSubsystem}
 
     def initialize(self) -> None:
         print("SwerveCommand initialized")
@@ -65,9 +65,7 @@ class SwerveCommand(Command):
         pov = self.controller.getRotateToAngle()
         if pov != -1:
             # TODO calibrate this PID controller
-            z = self.rotate_to_angle_pid.calculate(
-                self.swerve_subsystem.getAngle(), pov
-            )
+            z = self.rotate_to_angle_pid.calculate(self.swerveSubsystem.getAngle(), pov)
         else:
             z = -self.controller.getTurn() * speed_scale
             z = (dz(z) ** 2) * sign(z)
@@ -87,29 +85,35 @@ class SwerveCommand(Command):
             # z = self.zLimiter.calculate(z)
 
             if self.get_field_oriented():
-                chassis_speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                     x,
                     y,
                     z,
-                    self.swerve_subsystem.getRotation2d(),
+                    self.swerveSubsystem.getRotation2d(),
                 )
             else:
-                chassis_speeds = ChassisSpeeds(
+                chassisSpeeds = ChassisSpeeds(
                     x,
                     y,
                     z,
                 )
 
-            swerve_module_states = (
-                SwerveConstants.kDriveKinematics.toSwerveModuleStates(chassis_speeds)
+            if Constants.isSimulation:
+                self.swerveSubsystem.chassisSpeeds = chassisSpeeds
+
+            swerveModuleStates = SwerveConstants.kDriveKinematics.toSwerveModuleStates(
+                chassisSpeeds
             )
-            self.swerve_subsystem.setModuleStates(swerve_module_states)
+            self.swerveSubsystem.setModuleStates(swerveModuleStates)
         else:
-            self.swerve_subsystem.stop()
+            if Constants.isSimulation:
+                self.swerveSubsystem.chassisSpeeds = None
+
+            self.swerveSubsystem.stop()
 
     def end(self, interrupted: bool) -> None:
         print("SwerveCommand ended")
-        self.swerve_subsystem.stop()
+        self.swerveSubsystem.stop()
 
     def isFinished(self) -> bool:
         return False

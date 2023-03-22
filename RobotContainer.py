@@ -37,7 +37,7 @@ from wpimath.filter._filter import SlewRateLimiter
 
 
 class RobotContainer:
-    swerve_subsystem = SwerveSubsystem()
+    swerveSubsystem = SwerveSubsystem()
 
     controller = PilotController()
 
@@ -52,7 +52,7 @@ class RobotContainer:
         self.light_strip.setRainbowSlow()
 
     def get_angle(self):
-        return self.swerve_subsystem.getAngle()
+        return self.swerveSubsystem.getAngle()
 
     def vision_track(self):
         if self.photon_camera.hasTargets():
@@ -81,9 +81,9 @@ class RobotContainer:
     def setupSwerve(self):
         self.configureSwerveButtonBindings()
 
-        self.swerve_subsystem.setDefaultCommand(
+        self.swerveSubsystem.setDefaultCommand(
             SwerveCommand(
-                self.swerve_subsystem,
+                self.swerveSubsystem,
                 self.controller,
                 self.getFieldOriented,
             )
@@ -98,7 +98,7 @@ class RobotContainer:
         self.rotate_to_angle_pid.enableContinuousInput(-180, 180)
         self.rotate_to_angle_pid.setTolerance(3)  # degrees tolerance
 
-        self.swerve_auto_command = SwerveAutoCommand(self.swerve_subsystem)
+        self.swerveAutoCommand = SwerveAutoCommand(self.swerveSubsystem)
 
     def getFieldOriented(self) -> bool:
         return self.field_oriented
@@ -112,7 +112,7 @@ class RobotContainer:
             InstantCommand(self.toggleFieldOriented)
         )
         self.controller.resetGyroBtn().onTrue(
-            InstantCommand(self.swerve_subsystem.reset_gyro())
+            InstantCommand(self.swerveSubsystem.resetGyro)
         )
 
     def getAutonomousCommand(self):
@@ -143,17 +143,17 @@ class RobotContainer:
 
         swerve_command = Swerve4ControllerCommand(
             trajectory,
-            self.swerve_subsystem.getPose,
+            self.swerveSubsystem.getPose,
             SwerveConstants.kDriveKinematics,
             x_pid,
             y_pid,
             theta_pid,
-            self.swerve_subsystem.setModuleStates,
-            [self.swerve_subsystem],
+            self.swerveSubsystem.setModuleStates,
+            [self.swerveSubsystem],
         )
 
         return SequentialCommandGroup(
-            InstantCommand(self.swerve_subsystem.resetOdometer, trajectory.initialPose),
+            InstantCommand(self.swerveSubsystem.resetOdometer, trajectory.initialPose),
             swerve_command,
-            InstantCommand(self.swerve_subsystem.stop),
+            InstantCommand(self.swerveSubsystem.stop),
         )

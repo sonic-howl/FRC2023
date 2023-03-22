@@ -1,7 +1,10 @@
+import math
+from time import sleep
 from typing import Callable, Dict, List
 import typing
 
 from commands2 import Command, Subsystem
+from physics import PhysicsEngine
 from utils.utils import printAsync
 
 import wpilib
@@ -84,9 +87,10 @@ class PathTraverser:
 
         # def sample(self) -> Trajectory.State | None:
 
-    def sample(self) -> PathPlannerTrajectory.PathPlannerState | None:
-        if self.paths_traversed:
-            return None
+    # def sample(self) -> PathPlannerTrajectory.PathPlannerState | None:
+    def sample(self) -> PathPlannerTrajectory.PathPlannerState:
+        # if self.paths_traversed:
+        #     return None
 
         total_time = self.current_path.getTotalTime()
         time = self.timer.get()
@@ -122,23 +126,30 @@ class SwerveAutoCommand(Command):
     def __init__(self, swerve_subsystem: SwerveSubsystem) -> None:
         super().__init__()
 
-        self.swerve_subsystem = swerve_subsystem
+        self.swerveSubsystem = swerve_subsystem
 
         # TODO
         x_pid = PIDController(1, 0, 0, period=Constants.period)
         y_pid = PIDController(1, 0, 0, period=Constants.period)
         theta_pid = ProfiledPIDControllerRadians(
-            0.5,
+            5,
             0,
             0,
-            TrapezoidProfileRadians.Constraints(),
+            # TrapezoidProfileRadians.Constraints(),
+            TrapezoidProfileRadians.Constraints(
+                SwerveConstants.kDriveMaxAccelerationMetersPerSecond,
+                SwerveConstants.kDriveMaxTurnAccelerationMetersPerSecond,
+            ),
             period=Constants.period,
         )
         self.controller = HolonomicDriveController(x_pid, y_pid, theta_pid)
+        self.controller.setTolerance(Pose2d(0.05, 0.05, Rotation2d.fromDegrees(2)))
         # self.controller = PPHolonomicDriveController(x_pid, y_pid, theta_pid)
         # theta_pid = PIDController(0, 0, 0, period=Constants.period)
 
-        self.traverser = PathTraverser("Forwards_1m")
+        # self.traverser = PathTraverser("Forwards_1m")
+        # self.traverser = PathTraverser("Spin_90")
+        self.traverser = PathTraverser("Forwards_1m Spin_90")
 
         def handle_stop(stop_event: PathPlannerTrajectory.StopEvent) -> None:
             printAsync(
@@ -148,7 +159,7 @@ class SwerveAutoCommand(Command):
                 "\nwait time:",
                 stop_event.waitTime,
                 "\nFinal Pose:",
-                self.swerve_subsystem.getPose(),
+                self.swerveSubsystem.getPose(),
             )
 
         self.traverser.on_stop(handle_stop)
@@ -156,16 +167,17 @@ class SwerveAutoCommand(Command):
         self.finished = False
 
     def getRequirements(self) -> typing.Set[Subsystem]:
-        return {self.swerve_subsystem}
+        return {self.swerveSubsystem}
 
     def initialize(self) -> None:
         self.finished = False
-        self.swerve_subsystem.resetOdometer()
-        self.swerve_subsystem.reset_gyro()
+        self.swerveSubsystem.resetOdometer()
+        self.swerveSubsystem.resetGyro()
         self.traverser.reset()
 
         state = self.traverser.get_initial_state()
-        self.swerve_subsystem.resetOdometer(state.pose)  # may be problematic
+        self.swerveSubsystem.swerveAutoStartPose = state.pose
+        self.swerveSubsystem.resetOdometer(state.pose)  # may be problematic
         # self.move_to_state(state)
         # print_async(
         #     "SwerveAutoCommand initialized:",
@@ -178,8 +190,8 @@ class SwerveAutoCommand(Command):
     # def move_to_state(self, state: Trajectory.State):
 
     def move_to_state(self, state: PathPlannerTrajectory.PathPlannerState):
-        chassis_speeds = self.controller.calculate(
-            self.swerve_subsystem.getPose(),
+        chassisSpeeds = self.controller.calculate(
+            self.swerveSubsystem.getPose(),
             state.pose,
             state.velocity,
             state.holonomicRotation,
@@ -188,19 +200,30 @@ class SwerveAutoCommand(Command):
         # chassis_speeds = self.controller.calculate(
         #     self.swerve_subsystem.get_pose(), state, state.pose.rotation()
         # )
+        # print(
+        #     "current_pose:  ",
+        #     self.swerveSubsystem.getPose(),
+        #     "\nsetpoint rot:  ",
+        #     state.holonomicRotation.degrees(),
+        #     "\nchassis_speeds:",
+        #     chassisSpeeds,
+        # )
+
         print(
-            "current_pose:  ",
-            self.swerve_subsystem.getPose(),
-            "\nsetpoint rot:        ",
-            state.holonomicRotation,
-            "\nchassis_speeds:",
-            chassis_speeds,
-        )
-        swerve_module_states = SwerveConstants.kDriveKinematics.toSwerveModuleStates(
-            chassis_speeds
+            f"""
+current_pose:   {self.swerveSubsystem.getPose()}
+setpoint rot:   {state.holonomicRotation.degrees()}
+chassis_speeds: {chassisSpeeds}"""
         )
 
-        self.swerve_subsystem.setModuleStates(swerve_module_states, isClosedLoop=True)
+        if Constants.isSimulation:
+            self.swerveSubsystem.chassisSpeeds = chassisSpeeds
+
+        swerveModuleStates = SwerveConstants.kDriveKinematics.toSwerveModuleStates(
+            chassisSpeeds
+        )
+
+        self.swerveSubsystem.setModuleStates(swerveModuleStates, isClosedLoop=True)
 
         # print_async(self.traverser.timer.get(), swerve_module_states)
 
@@ -208,13 +231,19 @@ class SwerveAutoCommand(Command):
         self.traverser.start_timer()
         state = self.traverser.sample()
 
-        if state is None:
-            self.end(False)
-            return
+        # if state is None:
+        #     if self.controller.atReference():
+        #         self.end(False)
+        #     return
 
         self.move_to_state(state)
 
     def end(self, interrupted: bool) -> None:
+        self.swerveSubsystem.stop()
+
+        if Constants.isSimulation:
+            self.swerveSubsystem.chassisSpeeds = None
+
         if not interrupted:
             printAsync(
                 "SwerveAutoCommand ended",

@@ -9,14 +9,11 @@ class PilotController:
         return self._controller.isConnected()
 
     # reversing x and y controller -> field axes. x is forwards, y is strafe.
-    # axis 0 is normally x, axis 1 is normally y
     def getForward(self):
-        # return -self._controller.getLeftY()
-        return -self._controller.getRawAxis(0)
+        return -self._controller.getLeftY()
 
     def getStrafe(self):
-        # return self._controller.getLeftX()
-        return self._controller.getRawAxis(1)
+        return self._controller.getLeftX()
 
     def getTurn(self):
         # return self._controller.getRightX()

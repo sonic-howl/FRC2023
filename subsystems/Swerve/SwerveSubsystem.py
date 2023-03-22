@@ -1,11 +1,11 @@
-from ntcore import NetworkTableInstance
 from threading import Thread
 from time import sleep
 from typing import Tuple
 
 import wpilib
-from utils.utils import printAsync
+from ntcore import NetworkTableInstance
 from wpimath.kinematics import (
+    ChassisSpeeds,
     SwerveModuleState,
     SwerveDrive4Odometry,
 )
@@ -14,11 +14,20 @@ from wpimath.kinematics import SwerveDrive4Kinematics
 from wpilib import SPI, Field2d, SmartDashboard
 from navx import AHRS
 from commands2 import SubsystemBase
+
+from physics import PhysicsEngine
 from .SwerveModule import SwerveModule
 from constants import SwerveConstants, Constants
 
 
 class SwerveSubsystem(SubsystemBase):
+    chassisSpeeds: ChassisSpeeds | None = None
+    """Meant for simulation only"""
+    swerveAutoStartPose: Pose2d | None = None
+    """Meant for simulation only"""
+    swerveAutoStartPoseUsed = False
+    """Meant for simulation only"""
+
     front_left = SwerveModule(
         SwerveConstants.fl_drive_id,
         SwerveConstants.fl_turn_id,
@@ -44,7 +53,11 @@ class SwerveSubsystem(SubsystemBase):
         chassis_angular_offset=SwerveConstants.br_chassis_angular_offset,
     )
 
-    gyro = AHRS(SPI.Port.kMXP, int(1 / Constants.period))
+    gyro = AHRS(
+        Constants.navxPort,
+        AHRS.SerialDataType.kProcessedData,
+        int(1 / Constants.period),
+    )
 
     odometer = SwerveDrive4Odometry(
         SwerveConstants.kDriveKinematics,
@@ -60,19 +73,23 @@ class SwerveSubsystem(SubsystemBase):
     def __init__(self) -> None:
         super().__init__()
 
-        def reset_gyro():
+        def resetGyro():
             """reset gyro after it's calibration of 1s"""
             sleep(1)
-            self.gyro.reset()
+            self.resetGyro()
 
-        Thread(target=reset_gyro).start()
+        Thread(target=resetGyro).start()
 
-        # self.field = Field2d()
-        # SmartDashboard.putData("Field", self.field)
+        if not Constants.isSimulation:
+            self.field = Field2d()
+            SmartDashboard.putData("Field", self.field)
 
-    def getAngle(self):
+    def getAngle(self) -> float:
         # return self.gyro.getAngle() % 360
         # return self.gyro.getFusedHeading()
+        if Constants.isSimulation:
+            return PhysicsEngine.simGyro.getAngle()
+
         return -self.gyro.getYaw()
 
     def getRotation2d(self):
@@ -81,9 +98,9 @@ class SwerveSubsystem(SubsystemBase):
     def getPose(self) -> Pose2d:
         return self.odometer.getPose()
 
-    def reset_gyro(self):
-        # self.gyro.reset()
-        self.gyro.zeroYaw()
+    def resetGyro(self):
+        # self.gyro.zeroYaw()
+        self.gyro.reset()
 
     def reset_motor_positions(self):
         self.front_left.resetEncoders()
@@ -108,7 +125,8 @@ class SwerveSubsystem(SubsystemBase):
     def periodic(self) -> None:
         # TODO print gyro angle, robot pose on dashboard
 
-        # self.field.setRobotPose(self.getPose())
+        if not Constants.isSimulation:
+            self.field.setRobotPose(self.getPose())
 
         self.odometer.update(
             self.getRotation2d(),
