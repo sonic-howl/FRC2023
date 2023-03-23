@@ -1,15 +1,9 @@
-from typing import List
 from LightStrip import LightStrip
 from controllers.pilot import PilotController
 
-from photonvision import PhotonCamera, LEDMode, RobotPoseEstimator
-from wpilib import Field2d, SmartDashboard
+from photonvision import PhotonCamera
 from commands.SwerveAutoCommand import SwerveAutoCommand
-from pathplannerlib import PathPlanner, PathConstraints, PathPlannerTrajectory
-from pathplannerlib._pathplannerlib.controllers import PPHolonomicDriveController
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
-from utils.utils import printAsync, sign
-from wpimath.kinematics import ChassisSpeeds, SwerveModuleState
 from wpimath.trajectory import (
     TrajectoryConfig,
     TrajectoryGenerator,
@@ -21,20 +15,14 @@ from wpimath.controller import (
     ProfiledPIDControllerRadians,
 )
 from commands2 import (
-    RunCommand,
     InstantCommand,
     Swerve4ControllerCommand,
     SequentialCommandGroup,
-    ParallelCommandGroup,
 )
-from commands2.button import JoystickButton, CommandXboxController
 
 from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 from commands.SwerveCommand import SwerveCommand
 from constants import Constants, SwerveConstants
-
-
-from wpimath.filter._filter import SlewRateLimiter
 
 
 class RobotContainer:

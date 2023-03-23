@@ -1,6 +1,8 @@
 from typing import Type
 import math
 
+import wpilib
+
 import rev
 from commands2 import SubsystemBase
 from wpimath.controller import ArmFeedforward
@@ -17,7 +19,22 @@ class ArmSubsystem(SubsystemBase):
         self.armMotor.restoreFactoryDefaults()
         self.armMotor.setOpenLoopRampRate(0.5)
         self.armMotor.setIdleMode(rev.CANSparkMax.IdleMode.kBrake)
+
+        # soft limits
+        # ! test this. It may be raw encoder units rather than degrees (scaled from encoder units)
+        self.armMotor.enableSoftLimit(rev.CANSparkMax.SoftLimitDirection.kForward, True)
+        self.armMotor.setSoftLimit(
+            rev.CANSparkMax.SoftLimitDirection.kForward, constants.kForwardSoftLimit
+        )
+        self.armMotor.enableSoftLimit(rev.CANSparkMax.SoftLimitDirection.kReverse, True)
+        self.armMotor.setSoftLimit(
+            rev.CANSparkMax.SoftLimitDirection.kReverse, constants.kReverseSoftLimit
+        )
+        # self.armMotor.getForwardLimitSwitch(rev.SparkMaxLimitSwitch.Type.kNormallyOpen)
+        # TODO handle logic in a periodic method to reset the encoder position if the limit switch is triggered
+
         # PID setup (not used)
+        # ? or maybe it's used by Smart Motion?
         self.armPID = self.armMotor.getPIDController()
         self.armPID.setOutputRange(-Constants.maxSpeed, Constants.maxSpeed)
         self.armPID.setP(constants.kP)
@@ -25,6 +42,7 @@ class ArmSubsystem(SubsystemBase):
         self.armPID.setD(constants.kD)
         self.armPID.setIZone(constants.kIz)
         self.armPID.setFF(constants.kFF)
+
         # Smart Motion setup
         self.armPID.setSmartMotionMinOutputVelocity(0)
         self.armPID.setSmartMotionMaxVelocity(constants.kMaxVelocityRPM)
@@ -33,14 +51,19 @@ class ArmSubsystem(SubsystemBase):
             rev.SparkMaxPIDController.AccelStrategy.kSCurve
         )
         self.armPID.setSmartMotionAllowedClosedLoopError(0)
+
         # Arm encoder setup
         self.armEncoder = self.armMotor.getEncoder(
             *constants.getEncoderArgs
         )  # when brushed with data port encoder wire: rev.SparkMaxRelativeEncoder.Type.kQuadrature, 1024
         self.armEncoder.setPositionConversionFactor(constants.kConversionFactor)
-        self.armEncoder.setVelocityConversionFactor(constants.kConversionFactor / 60)
+        self.armEncoder.setVelocityConversionFactor(
+            constants.kConversionFactor
+            * (math.tau / 60)  # converting from RPM to radians per second
+        )
         self.armMotor.burnFlash()
 
+        # feedforward setup
         self.armFF = ArmFeedforward(
             constants.kS,
             constants.kG,
@@ -48,16 +71,32 @@ class ArmSubsystem(SubsystemBase):
             constants.kA,
         )
 
+        # acceleration calculation
+        self.timer = wpilib.Timer()
+        self.timer.start()
+        self.lastTime = float(self.timer.get())
+        self.lastVelocity = 0.0
+        self.acceleration = 0.0
+
+    def periodic(self) -> None:
+        # calculating acceleration periodically so it's always up to date for the feedforward controller
+        # ? maybe this could be moved into setAngle()?
+        velocity = self.armEncoder.getVelocity()
+        now = float(self.timer.get())
+        self.acceleration = (velocity - self.lastVelocity) / (now - self.lastTime)
+        self.lastVelocity = velocity
+        self.lastTime = now
+
     def setAngle(self, angle: float):
         """
         Sets the angle of the arm in degrees.
         :param angle: The angle to set the arm to in degrees.
         :param ffVoltage: The feedforward voltage to apply to the arm.
         """
-
-        # TODO: maybe calculate acceleration too?
         velocity = self.armEncoder.getVelocity()
-        ffVoltage = self.armFF.calculate(math.radians(angle), velocity)
+        ffVoltage = self.armFF.calculate(
+            math.radians(angle), velocity, self.acceleration
+        )
 
         self.armPID.setReference(
             angle, rev.CANSparkMax.ControlType.kSmartMotion, arbFeedforward=ffVoltage
@@ -69,3 +108,10 @@ class ArmSubsystem(SubsystemBase):
         :return: The angle of the arm in degrees.
         """
         return self.armEncoder.getPosition() % 360
+
+    def addAngle(self, angle: float):
+        """
+        Adds an angle to the current angle of the arm in degrees.
+        :param angle: The angle to add to the arm in degrees.
+        """
+        self.setAngle(self.getAngle() + angle)

@@ -1,7 +1,6 @@
 from enum import Enum
 import math
 import rev
-import wpilib
 from wpimath.kinematics import SwerveDrive4Kinematics
 from wpimath.geometry import Translation2d
 
@@ -29,8 +28,11 @@ class Constants:
 
     light_strip_pwm_port = 1
 
-    # navxPort = wpilib.SerialPort.Port.kUSB
-    navxPort = wpilib.SPI.Port.kMXP
+    class NavXPort(Enum):
+        kUSB = 1
+        kSPI = 2
+
+    navxPort = NavXPort.kUSB
 
 
 class ArmConstants:
@@ -42,9 +44,11 @@ class ArmConstants:
     class AngleType(Enum):
         kStow = 0
         kFloor = 1
-        kGridS1 = 2
-        kGridS2 = 3
-        kGridS3 = 4
+        kUpperFeedStation = 2
+        # kLowerFeedStation = 3
+        kGridS1 = 4
+        kGridS2 = 5
+        kGridS3 = 6
 
     class SubsystemType(Enum):
         kArm = 0
@@ -58,6 +62,10 @@ class ArmConstants:
             },
             AngleType.kFloor: {
                 SubsystemType.kArm: 45,
+                SubsystemType.kClaw: 90,
+            },
+            AngleType.kUpperFeedStation: {
+                SubsystemType.kArm: 120,
                 SubsystemType.kClaw: 90,
             },
             AngleType.kGridS1: {
@@ -82,6 +90,10 @@ class ArmConstants:
                 SubsystemType.kArm: 45,
                 SubsystemType.kClaw: 90,
             },
+            AngleType.kUpperFeedStation: {
+                SubsystemType.kArm: 120,
+                SubsystemType.kClaw: 90,
+            },
             AngleType.kGridS1: {
                 SubsystemType.kArm: 60,
                 SubsystemType.kClaw: 90,
@@ -102,6 +114,10 @@ class ArmConstants:
             },
             AngleType.kFloor: {
                 SubsystemType.kArm: 45,
+                SubsystemType.kClaw: 90,
+            },
+            AngleType.kUpperFeedStation: {
+                SubsystemType.kArm: 120,
                 SubsystemType.kClaw: 90,
             },
             AngleType.kGridS1: {
@@ -127,6 +143,9 @@ class ArmConstants:
         kMaxVelocityRPM = 2000  # TODO calibrate
         kMaxAccelerationRPM = 1500  # TODO calibrate
 
+        kForwardSoftLimit = 140  # degrees
+        kReverseSoftLimit = 0  # degrees
+
         getEncoderArgs = (rev.SparkMaxRelativeEncoder.Type.kQuadrature, 1024)
 
         kP = 0  # TODO this may have to be non-zero for smart motion to work
@@ -139,13 +158,21 @@ class ArmConstants:
         kG = 3.34
         kV = 0.47
         kA = 0.55
+        
+        class Manual:
+            maxAnglePerSecond = 90  # degrees per second
+            omegaScale = 5
 
     class Claw:
         motorType = rev.CANSparkMax.MotorType.kBrushless
+
         kCANId = 11
         kConversionFactor = 10  # TODO change
         kMaxVelocityRPM = 1000  # TODO calibrate
         kMaxAccelerationRPM = 500  # TODO calibrate
+
+        kForwardSoftLimit = 180  # degrees
+        kReverseSoftLimit = 0  # degrees
 
         getEncoderArgs = ()
 
@@ -159,6 +186,10 @@ class ArmConstants:
         kG = 9.04
         kV = 0.10
         kA = 0.23
+
+        class Manual:
+            maxAnglePerSecond = 90  # degrees per second
+            omegaScale = 5
 
 
 class SwerveConstants:

@@ -1,4 +1,17 @@
-class Conversions:
+import math
+
+
+class UnitConversions:
+    @staticmethod
+    def rpmToRps(rpm: float):
+        """
+        Convert RPM to radians per second.
+        """
+        rps = rpm * math.tau / 60
+        return rps
+
+
+class MotorConversions:
     @staticmethod
     def CANcoderToDegrees(positionCounts: float, gearRatio: float):
         """
@@ -65,7 +78,7 @@ class Conversions:
         :param gearRatio: Gear Ratio between Falcon and Mechanism (set to 1 for Falcon MPS)
         :return: Falcon Velocity Counts
         """
-        wheelRPM = Conversions.falconToRPM(velocityCounts, gearRatio)
+        wheelRPM = MotorConversions.falconToRPM(velocityCounts, gearRatio)
         wheelMPS = (wheelRPM * circumference) / 60
         return wheelMPS
 
@@ -78,7 +91,7 @@ class Conversions:
         :return: Falcon Velocity Counts
         """
         wheelRPM = (velocity * 60) / circumference
-        wheelVelocity = Conversions.RPMToFalcon(wheelRPM, gearRatio)
+        wheelVelocity = MotorConversions.RPMToFalcon(wheelRPM, gearRatio)
         return wheelVelocity
 
     @staticmethod
@@ -153,7 +166,7 @@ class Conversions:
         :param gearRatio: Gear Ratio between VersaPlanetary and Mechanism (set to 1 for VersaPlanetary MPS)
         :return: VersaPlanetary Velocity Counts
         """
-        wheelRPM = Conversions.versaPlanetaryToRPM(velocityCounts, gearRatio)
+        wheelRPM = MotorConversions.versaPlanetaryToRPM(velocityCounts, gearRatio)
         wheelMPS = (wheelRPM * circumference) / 60
         return wheelMPS
 
@@ -166,7 +179,7 @@ class Conversions:
         :return: VersaPlanetary Velocity Counts
         """
         wheelRPM = (velocity * 60) / circumference
-        wheelVelocity = Conversions.RPMToVersaPlanetary(wheelRPM, gearRatio)
+        wheelVelocity = MotorConversions.RPMToVersaPlanetary(wheelRPM, gearRatio)
         return wheelVelocity
 
     @staticmethod
