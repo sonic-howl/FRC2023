@@ -35,6 +35,10 @@ class Robot(wp.TimedRobot):
         self.swerveAutoCommand = self.robotContainer.swerveAutoCommand
 
     def robotPeriodic(self) -> None:
+        print(
+            "current claw pos:",
+            self.robotContainer.armAssemblySubsystem.claw.armEncoder.getPosition(),
+        )
         # self.robot_container.robotPeriodic()
 
         self.gyro_topic.set(self.robotContainer.get_angle())

@@ -7,6 +7,7 @@ from wpilib import Field2d, SmartDashboard
 from commands.SwerveAutoCommand import SwerveAutoCommand
 from pathplannerlib import PathPlanner, PathConstraints, PathPlannerTrajectory
 from pathplannerlib._pathplannerlib.controllers import PPHolonomicDriveController
+from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 from utils.utils import printAsync, sign
 from wpimath.kinematics import ChassisSpeeds, SwerveModuleState
 from wpimath.trajectory import (
@@ -38,6 +39,7 @@ from wpimath.filter._filter import SlewRateLimiter
 
 class RobotContainer:
     swerveSubsystem = SwerveSubsystem()
+    armAssemblySubsystem = ArmAssemblySubsystem()
 
     controller = PilotController()
 

@@ -13,15 +13,13 @@ class ArmSubsystem(SubsystemBase):
         super().__init__()
 
         # arm
-        self.armMotor = rev.CANSparkMax(
-            constants.kCANId, rev.CANSparkMax.MotorType.kBrushed
-        )
+        self.armMotor = rev.CANSparkMax(constants.kCANId, constants.motorType)
         self.armMotor.restoreFactoryDefaults()
         self.armMotor.setOpenLoopRampRate(0.5)
         self.armMotor.setIdleMode(rev.CANSparkMax.IdleMode.kBrake)
         # PID setup (not used)
         self.armPID = self.armMotor.getPIDController()
-        self.armPID.setOutputRange(-Constants.max_speed, Constants.max_speed)
+        self.armPID.setOutputRange(-Constants.maxSpeed, Constants.maxSpeed)
         self.armPID.setP(constants.kP)
         self.armPID.setI(constants.kI)
         self.armPID.setD(constants.kD)
@@ -37,8 +35,8 @@ class ArmSubsystem(SubsystemBase):
         self.armPID.setSmartMotionAllowedClosedLoopError(0)
         # Arm encoder setup
         self.armEncoder = self.armMotor.getEncoder(
-            rev.SparkMaxRelativeEncoder.Type.kQuadrature, 1024
-        )
+            *constants.getEncoderArgs
+        )  # when brushed with data port encoder wire: rev.SparkMaxRelativeEncoder.Type.kQuadrature, 1024
         self.armEncoder.setPositionConversionFactor(constants.kConversionFactor)
         self.armEncoder.setVelocityConversionFactor(constants.kConversionFactor / 60)
         self.armMotor.burnFlash()

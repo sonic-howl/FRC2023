@@ -1,5 +1,6 @@
 from enum import Enum
 import math
+import rev
 import wpilib
 from wpimath.kinematics import SwerveDrive4Kinematics
 from wpimath.geometry import Translation2d
@@ -12,7 +13,7 @@ class FalconConstants:
 
 class Constants:
     # !
-    max_speed = 0.15
+    maxSpeed = 0.15
     scale_speed = 0.15
 
     isSimulation = False
@@ -23,12 +24,13 @@ class Constants:
     pilot_controller_id = 0
     operator_controller_id = 1
 
-    frame_width = 28
-    frame_length = 32
+    frame_width = 27
+    frame_length = 26
 
     light_strip_pwm_port = 1
 
-    navxPort = wpilib.SerialPort.Port.kUSB
+    # navxPort = wpilib.SerialPort.Port.kUSB
+    navxPort = wpilib.SPI.Port.kMXP
 
 
 class ArmConstants:
@@ -118,10 +120,14 @@ class ArmConstants:
     }
 
     class Arm:
+        motorType = rev.CANSparkMax.MotorType.kBrushed
+
         kCANId = 10
         kConversionFactor = 0.5532  # TODO change
         kMaxVelocityRPM = 2000  # TODO calibrate
         kMaxAccelerationRPM = 1500  # TODO calibrate
+
+        getEncoderArgs = (rev.SparkMaxRelativeEncoder.Type.kQuadrature, 1024)
 
         kP = 0  # TODO this may have to be non-zero for smart motion to work
         kI = 0
@@ -135,10 +141,13 @@ class ArmConstants:
         kA = 0.55
 
     class Claw:
+        motorType = rev.CANSparkMax.MotorType.kBrushless
         kCANId = 11
         kConversionFactor = 10  # TODO change
         kMaxVelocityRPM = 1000  # TODO calibrate
         kMaxAccelerationRPM = 500  # TODO calibrate
+
+        getEncoderArgs = ()
 
         kP = 0
         kI = 0
@@ -155,16 +164,11 @@ class ArmConstants:
 class SwerveConstants:
     swerveDashboardName = "Swerve Dashboard"
 
-    # to change the robot orientation (which way is front), change these
-    # kDriveKinematics = SwerveDrive4Kinematics(
-    #     Translation2d(-Constants.frame_width / 2, -Constants.frame_length / 2),
-    #     Translation2d(Constants.frame_width / 2, -Constants.frame_length / 2),
-    #     Translation2d(Constants.frame_width / 2, Constants.frame_length / 2),
-    #     Translation2d(-Constants.frame_width / 2, Constants.frame_length / 2),
-    # )
+    # to change the robot orientation (which way is front)
+    # or if wheels are in the wrong orientation when rotating but fine when moving forward, change these
     kDriveKinematics = SwerveDrive4Kinematics(
-        Translation2d(Constants.frame_width / 2, -Constants.frame_length / 2),
         Translation2d(Constants.frame_width / 2, Constants.frame_length / 2),
+        Translation2d(Constants.frame_width / 2, -Constants.frame_length / 2),
         Translation2d(-Constants.frame_width / 2, -Constants.frame_length / 2),
         Translation2d(-Constants.frame_width / 2, Constants.frame_length / 2),
     )
@@ -172,25 +176,21 @@ class SwerveConstants:
     fl_drive_id = 2
     fl_turn_id = 3
     fl_abs_encoder_offset_rad = 2.6546849
-    # fl_chassis_angular_offset = 0
-    fl_chassis_angular_offset = 0
+    fl_chassis_angular_offset = -math.pi / 2
 
-    fr_drive_id = 8
-    fr_turn_id = 9
-    fr_abs_encoder_offset_rad = 0.7045867
-    # fr_chassis_angular_offset = math.pi / 2
-    fr_chassis_angular_offset = -math.pi / 2
+    fr_drive_id = 4
+    fr_turn_id = 5
+    fr_abs_encoder_offset_rad = 5.2596858
+    fr_chassis_angular_offset = 0
 
     bl_drive_id = 6
     bl_turn_id = 7
-    bl_abs_encoder_offset_rad = 5.2724060
-    # bl_chassis_angular_offset = -math.pi / 2
+    bl_abs_encoder_offset_rad = 0.5824341
     bl_chassis_angular_offset = math.pi
 
-    br_drive_id = 4
-    br_turn_id = 5
-    br_abs_encoder_offset_rad = 0.5696462
-    # br_chassis_angular_offset = math.pi
+    br_drive_id = 8
+    br_turn_id = 9
+    br_abs_encoder_offset_rad = 0.7112656
     br_chassis_angular_offset = math.pi / 2
 
     kPTurning = 1
@@ -201,8 +201,8 @@ class SwerveConstants:
     # TODO calibrate
     kDriveMaxMetersPerSecond = 5.15
     kDriveMaxAccelerationMetersPerSecond = 3.0
-    kDriveMaxTurnMetersPerSecond = 8.0
-    kDriveMaxTurnAccelerationMetersPerSecond = 5.0
+    kDriveMaxTurnMetersPerSecond = 5.0
+    kDriveMaxTurnAccelerationMetersPerSecond = 3.0
 
     kPRobotTurn = 0.001
     kIRobotTurn = 0
