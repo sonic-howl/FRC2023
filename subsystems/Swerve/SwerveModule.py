@@ -10,10 +10,10 @@ from constants import FalconConstants, SwerveConstants, Constants
 
 def scaleSpeed(speed: float) -> float:
     speed *= Constants.scale_speed
-    if speed > Constants.max_speed:
-        speed = Constants.max_speed
-    elif speed < -Constants.max_speed:
-        speed = -Constants.max_speed
+    if speed > Constants.maxSpeed:
+        speed = Constants.maxSpeed
+    elif speed < -Constants.maxSpeed:
+        speed = -Constants.maxSpeed
     return speed
 
 
@@ -38,9 +38,9 @@ class SwerveModule:
         # create motors
         # drive motor
         self.drive_motor = ctre.WPI_TalonFX(drive_motor_id)
-        self.drive_motor.configPeakOutputReverse(-Constants.max_speed)
-        self.drive_motor.configPeakOutputForward(Constants.max_speed)
-        self.drive_motor.configClosedLoopPeakOutput(0, Constants.max_speed)
+        self.drive_motor.configPeakOutputReverse(-Constants.maxSpeed)
+        self.drive_motor.configPeakOutputForward(Constants.maxSpeed)
+        self.drive_motor.configClosedLoopPeakOutput(0, Constants.maxSpeed)
         self.drive_motor.configFactoryDefault()
         self.drive_motor.setNeutralMode(ctre.NeutralMode.Brake)
         self.drive_motor.configStatorCurrentLimit(
@@ -68,7 +68,7 @@ class SwerveModule:
         # ?
         self.turn_motor.restoreFactoryDefaults()
         self.turn_motor.setInverted(turn_motor_reversed)
-        self.turn_motor.setIdleMode(rev.CANSparkMax.IdleMode.kCoast)
+        self.turn_motor.setIdleMode(rev.CANSparkMax.IdleMode.kBrake)
         # self.turn_motor.setOpenLoopRampRate(200 / 1000)  # ms
         self.turn_motor.setSmartCurrentLimit(15)
         self.turn_motor.setSecondaryCurrentLimit(20)
@@ -97,15 +97,6 @@ class SwerveModule:
         self.turn_pid.setOutputRange(-1, 1)
 
         self.turn_motor.burnFlash()
-
-        # self.turn_pid = PIDController(
-        #     SwerveConstants.kPTurning,
-        #     SwerveConstants.kITurning,
-        #     SwerveConstants.kDTurning,
-        #     Constants.period,
-        # )
-        # self.turn_pid.enableContinuousInput(-math.pi, math.pi)
-        # self.turn_pid.setTolerance(math.radians(SwerveConstants.kTurningToleranceDeg))
 
         self.resetEncoders()
 

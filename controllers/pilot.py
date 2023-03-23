@@ -1,9 +1,9 @@
-from commands2.button import CommandPS4Controller
+from commands2.button import CommandXboxController
 from constants import Constants
 
 
 class PilotController:
-    _controller = CommandPS4Controller(Constants.pilot_controller_id)
+    _controller = CommandXboxController(Constants.pilot_controller_id)
 
     def isConnected(self):
         return self._controller.isConnected()
@@ -13,21 +13,20 @@ class PilotController:
         return -self._controller.getLeftY()
 
     def getStrafe(self):
-        return self._controller.getLeftX()
+        return -self._controller.getLeftX()
 
     def getTurn(self):
-        # return self._controller.getRightX()
-        return self._controller.getRawAxis(2)
+        return self._controller.getRightX()
 
     def getSpeed(self):
-        # return self._controller.getL2Axis()
-        return (self._controller.getRawAxis(4) + 1) / 2
+        return self._controller.getRightTriggerAxis()
+        # return (self._controller.getRawAxis(4) + 1) / 2
 
     def getRotateToAngle(self):
         return self._controller.getPOV()
 
     def fieldOrientedBtn(self):
-        return self._controller.square()
+        return self._controller.X()
 
     def resetGyroBtn(self):
-        return self._controller.triangle()
+        return self._controller.Y()

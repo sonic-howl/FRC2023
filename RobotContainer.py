@@ -110,12 +110,13 @@ class RobotContainer:
         print("Field oriented: ", self.field_oriented)
 
     def configureSwerveButtonBindings(self) -> None:
-        self.controller.fieldOrientedBtn().onTrue(
-            InstantCommand(self.toggleFieldOriented)
-        )
-        self.controller.resetGyroBtn().onTrue(
-            InstantCommand(self.swerveSubsystem.resetGyro)
-        )
+        if self.controller.isConnected():
+            self.controller.fieldOrientedBtn().onTrue(
+                InstantCommand(self.toggleFieldOriented)
+            )
+            self.controller.resetGyroBtn().onTrue(
+                InstantCommand(self.swerveSubsystem.resetGyro)
+            )
 
     def getAutonomousCommand(self):
         trajectory_config = TrajectoryConfig(

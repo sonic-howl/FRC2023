@@ -15,7 +15,6 @@ from wpilib import SPI, Field2d, SmartDashboard
 from navx import AHRS
 from commands2 import SubsystemBase
 
-from physics import PhysicsEngine
 from .SwerveModule import SwerveModule
 from constants import SwerveConstants, Constants
 
@@ -88,6 +87,8 @@ class SwerveSubsystem(SubsystemBase):
         # return self.gyro.getAngle() % 360
         # return self.gyro.getFusedHeading()
         if Constants.isSimulation:
+            from physics import PhysicsEngine
+
             return PhysicsEngine.simGyro.getAngle()
 
         return -self.gyro.getYaw()
