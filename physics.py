@@ -4,7 +4,6 @@ from wpimath.geometry import Pose2d, Rotation2d
 from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
-    from wpilib import Field2d
     from robot import Robot
 
 
@@ -22,30 +21,18 @@ class PhysicsEngine(Engine):
     def update_sim(self, now: float, tm_diff: float):
         """Called when the simulation parameters for the program need to be updated"""
 
-        if (
-            not self.robot.robotContainer.swerveSubsystem.swerveAutoStartPoseUsed
-            and self.robot.robotContainer.swerveSubsystem.swerveAutoStartPose
-        ):
+        swerveSubsystem = self.robot.robotContainer.swerveSubsystem
+
+        if swerveSubsystem.swerveAutoStartPose:
             self.physics_controller.field.setRobotPose(
-                self.robot.robotContainer.swerveSubsystem.swerveAutoStartPose
+                swerveSubsystem.swerveAutoStartPose
             )
-            self.robot.robotContainer.swerveSubsystem.swerveAutoStartPoseUsed = True
+            swerveSubsystem.swerveAutoStartPose = None
 
-        if self.robot.robotContainer.swerveSubsystem.chassisSpeeds:
-            pose = self.physics_controller.drive(
-                self.robot.robotContainer.swerveSubsystem.chassisSpeeds, tm_diff
-            )
-
-            print(
-                "chassisSpeeds",
-                self.robot.robotContainer.swerveSubsystem.chassisSpeeds,
-                "setting pose",
-                pose,
-            )
+        if swerveSubsystem.chassisSpeeds:
+            pose = self.physics_controller.drive(swerveSubsystem.chassisSpeeds, tm_diff)
 
             self.physics_controller.field.setRobotPose(pose)
-            # self.robot.robotContainer.swerveSubsystem.odometer.resetPosition()
-            self.robot.robotContainer.swerveSubsystem.resetOdometer(pose)
+            swerveSubsystem.resetOdometer(pose)
 
-            # print("setting gyro angle", -pose.rotation().degrees())
             self.simGyro.setAngle(pose.rotation().degrees())

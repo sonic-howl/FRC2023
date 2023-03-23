@@ -8,10 +8,33 @@ def printAsync(*args, **kwargs) -> None:
     Thread(target=print, args=args, kwargs=kwargs).start()
 
 
-def sign(x: float) -> float:
+def sgn(x: float) -> float:
     """return the sign of x"""
     return -1 if x < 0 else 1
 
 
-def dz(x: float, dz: float = Constants.controller_deadzone):
+def dz(x: float, dz=Constants.controller_deadzone):
     return x if abs(x) > dz else 0
+
+
+def calcAxisSpeedWithCurvatureAndDeadzone(
+    x: float,
+    c=Constants.rotationCurvature,
+    b=Constants.rotationDeadzone,
+    dz=Constants.controller_deadzone,
+):
+    """
+    Calculate the speed of the axis with curvature and deadzone
+
+    Desmos graph: https://www.desmos.com/calculator/mdgjguyiob
+
+    :param x: the value of the axis
+    :param c: the curvature of the axis
+    :param b: the deadzone of the axis
+    :param dz: the deadzone of the controller
+    :return: output speed
+    """
+    if abs(x) < dz:
+        return 0.0
+    sign = sgn(x)
+    return abs(x**c) * sign * (1 - b) + b * sign

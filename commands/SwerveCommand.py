@@ -1,6 +1,6 @@
 import math
 from commands2 import Command, Subsystem
-from utils.utils import dz, sign
+from utils.utils import calcAxisSpeedWithCurvatureAndDeadzone, dz, sgn
 from wpimath.controller import PIDController
 from wpimath.kinematics import ChassisSpeeds
 from wpimath.filter._filter import SlewRateLimiter
@@ -67,8 +67,8 @@ class SwerveCommand(Command):
             # TODO calibrate this PID controller
             z = self.rotate_to_angle_pid.calculate(self.swerveSubsystem.getAngle(), pov)
         else:
-            z = -self.controller.getTurn() * speed_scale
-            z = (dz(z) ** 2) * sign(z)
+            z = self.controller.getTurn() * speed_scale
+            z = calcAxisSpeedWithCurvatureAndDeadzone(z)
             # z = self.z_limiter.calculate(z)
 
         # chassis_speeds: ChassisSpeeds | None = None

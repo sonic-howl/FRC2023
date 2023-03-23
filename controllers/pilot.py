@@ -16,7 +16,7 @@ class PilotController:
         return -self._controller.getLeftX()
 
     def getTurn(self):
-        return self._controller.getRightX()
+        return -self._controller.getRightX()
 
     def getSpeed(self):
         return self._controller.getRightTriggerAxis()

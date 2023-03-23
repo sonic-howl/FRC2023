@@ -14,6 +14,8 @@ class Constants:
     # !
     maxSpeed = 0.15
     scale_speed = 0.15
+    rotationCurvature = 2.0
+    rotationDeadzone = 0.1
 
     isSimulation = False
 

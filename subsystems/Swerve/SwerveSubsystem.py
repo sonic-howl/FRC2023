@@ -24,8 +24,6 @@ class SwerveSubsystem(SubsystemBase):
     """Meant for simulation only"""
     swerveAutoStartPose: Pose2d | None = None
     """Meant for simulation only"""
-    swerveAutoStartPoseUsed = False
-    """Meant for simulation only"""
 
     front_left = SwerveModule(
         SwerveConstants.fl_drive_id,
@@ -52,10 +50,17 @@ class SwerveSubsystem(SubsystemBase):
         chassis_angular_offset=SwerveConstants.br_chassis_angular_offset,
     )
 
-    gyro = AHRS(
-        Constants.navxPort,
-        AHRS.SerialDataType.kProcessedData,
-        int(1 / Constants.period),
+    gyro = (
+        AHRS(
+            wpilib.SerialPort.Port.kUSB,
+            AHRS.SerialDataType.kProcessedData,
+            int(1 / Constants.period),
+        )
+        if Constants.navxPort == Constants.NavXPort.kUSB
+        else AHRS(
+            wpilib.SPI.Port.kMXP,
+            int(1 / Constants.period),
+        )
     )
 
     odometer = SwerveDrive4Odometry(
@@ -119,10 +124,6 @@ class SwerveSubsystem(SubsystemBase):
             self.back_right.getPosition(),
         )
 
-    temp_timer = wpilib.Timer()
-    last_sensor_pos = 0
-
-    # override
     def periodic(self) -> None:
         # TODO print gyro angle, robot pose on dashboard
 
@@ -136,30 +137,6 @@ class SwerveSubsystem(SubsystemBase):
             self.back_left.getPosition(),
             self.back_right.getPosition(),
         )
-
-    #         self.temp_timer.start()
-    #         if self.temp_timer.advanceIfElapsed(1):
-    #             if (
-    #                 self.front_right.drive_motor.getSelectedSensorPosition()
-    #                 != self.last_sensor_pos
-    #             ):
-
-    #                 def do():
-    #                     print(
-    #                         f"""Robot pose: {self.odometer.getPose()}
-    # back_right sensor pos: {self.back_right.drive_motor.getSelectedSensorPosition()}
-    # front right velocity: {self.front_right.drive_motor.getSelectedSensorVelocity()}
-    # front_left : {self.front_left.get_position()}
-    # front_right: {self.front_right.get_position()}
-    # back_left:   {self.back_left.get_position()}
-    # back_right:  {self.back_right.get_position()}
-    # """
-    #                     )
-
-    #                 Thread(target=do).start()
-    #                 self.last_sensor_pos = (
-    #                     self.front_right.drive_motor.getSelectedSensorPosition()
-    #                 )
 
     def stop(self) -> None:
         self.front_left.stop()
