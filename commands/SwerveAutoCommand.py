@@ -4,7 +4,6 @@ from typing import Callable, Dict, List
 import typing
 
 from commands2 import Command, Subsystem
-from physics import PhysicsEngine
 from utils.utils import printAsync
 
 import wpilib
@@ -128,16 +127,16 @@ class SwerveAutoCommand(Command):
 
         self.swerveSubsystem = swerve_subsystem
 
-        # TODO
+        # TODO maybe move these to the swerve class, or have something similar
         x_pid = PIDController(1, 0, 0, period=Constants.period)
         y_pid = PIDController(1, 0, 0, period=Constants.period)
         theta_pid = ProfiledPIDControllerRadians(
-            5,
+            0.5,
             0,
             0,
             # TrapezoidProfileRadians.Constraints(),
             TrapezoidProfileRadians.Constraints(
-                SwerveConstants.kDriveMaxAccelerationMetersPerSecond,
+                SwerveConstants.kDriveMaxTurnMetersPerSecond,
                 SwerveConstants.kDriveMaxTurnAccelerationMetersPerSecond,
             ),
             period=Constants.period,
