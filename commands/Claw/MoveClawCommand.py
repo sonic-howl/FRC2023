@@ -1,4 +1,5 @@
-from commands2 import Command
+import typing
+from commands2 import Command, Subsystem
 from constants import ArmConstants
 from wpimath.filter import SlewRateLimiter
 
@@ -23,18 +24,23 @@ class MoveClawCommand(Command):
     def initialize(self) -> None:
         pass
 
-    def execute(self) -> None:
-        armOmega = (
-            self.armLimiter.calculate(self.controller.getArmRotation())
-            * ArmConstants.Arm.Manual.omegaScale
-        )
-        clawOmega = (
-            self.clawLimiter.calculate(self.controller.getClawRotation())
-            * ArmConstants.Claw.Manual.omegaScale
-        )
+    def getRequirements(self) -> typing.Set[Subsystem]:
+        return {self.armSubsystem}
 
-        self.armSubsystem.arm.addAngle(armOmega)
-        self.armSubsystem.claw.addAngle(clawOmega)
+    def execute(self) -> None:
+        self.armSubsystem.arm.armMotor.set(self.controller.getArmRotation())
+        self.armSubsystem.claw.armMotor.set(self.controller.getClawRotation())
+        # armOmega = (
+        #     self.armLimiter.calculate(self.controller.getArmRotation())
+        #     * ArmConstants.Arm.Manual.omegaScale
+        # )
+        # clawOmega = (
+        #     self.clawLimiter.calculate(self.controller.getClawRotation())
+        #     * ArmConstants.Claw.Manual.omegaScale
+        # )
+
+        # self.armSubsystem.arm.addAngle(armOmega)
+        # self.armSubsystem.claw.addAngle(clawOmega)
 
     def end(self, interrupted: bool) -> None:
         pass

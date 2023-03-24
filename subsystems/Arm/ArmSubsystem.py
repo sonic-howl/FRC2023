@@ -14,6 +14,8 @@ class ArmSubsystem(SubsystemBase):
     def __init__(self, constants: Type[ArmConstants.Arm | ArmConstants.Claw]) -> None:
         super().__init__()
 
+        self.initialPosition = constants.initialPosition
+
         # arm
         self.armMotor = rev.CANSparkMax(constants.kCANId, constants.motorType)
         self.armMotor.restoreFactoryDefaults()
@@ -22,14 +24,14 @@ class ArmSubsystem(SubsystemBase):
 
         # soft limits
         # ! test this. It may be raw encoder units rather than degrees (scaled from encoder units)
-        self.armMotor.enableSoftLimit(rev.CANSparkMax.SoftLimitDirection.kForward, True)
-        self.armMotor.setSoftLimit(
-            rev.CANSparkMax.SoftLimitDirection.kForward, constants.kForwardSoftLimit
-        )
-        self.armMotor.enableSoftLimit(rev.CANSparkMax.SoftLimitDirection.kReverse, True)
-        self.armMotor.setSoftLimit(
-            rev.CANSparkMax.SoftLimitDirection.kReverse, constants.kReverseSoftLimit
-        )
+        # self.armMotor.enableSoftLimit(rev.CANSparkMax.SoftLimitDirection.kForward, True)
+        # self.armMotor.setSoftLimit(
+        #     rev.CANSparkMax.SoftLimitDirection.kForward, constants.kForwardSoftLimit
+        # )
+        # self.armMotor.enableSoftLimit(rev.CANSparkMax.SoftLimitDirection.kReverse, True)
+        # self.armMotor.setSoftLimit(
+        #     rev.CANSparkMax.SoftLimitDirection.kReverse, constants.kReverseSoftLimit
+        # )
         # self.armMotor.getForwardLimitSwitch(rev.SparkMaxLimitSwitch.Type.kNormallyOpen)
         # TODO handle logic in a periodic method to reset the encoder position if the limit switch is triggered
 
@@ -61,6 +63,9 @@ class ArmSubsystem(SubsystemBase):
             constants.kConversionFactor
             * (math.tau / 60)  # converting from RPM to radians per second
         )
+        # TODO use a constant
+        self.armEncoder.setPosition(10)
+
         self.armMotor.burnFlash()
 
         # feedforward setup

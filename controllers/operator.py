@@ -53,3 +53,6 @@ class OperatorController:
         This will control the rotation of the claw.
         """
         return -self._controller.getRightY()
+
+    def getZeroEncoderPosition(self):
+        return self._controller.B()

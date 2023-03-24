@@ -1,4 +1,6 @@
 from LightStrip import LightStrip
+from commands.Claw.MoveClawCommand import MoveClawCommand
+from controllers.operator import OperatorController
 from controllers.pilot import PilotController
 
 from photonvision import PhotonCamera
@@ -29,7 +31,8 @@ class RobotContainer:
     swerveSubsystem = SwerveSubsystem()
     armAssemblySubsystem = ArmAssemblySubsystem()
 
-    controller = PilotController()
+    pilotController = PilotController()
+    operatorController = OperatorController()
 
     field_oriented = True
 
@@ -37,6 +40,7 @@ class RobotContainer:
 
     def __init__(self) -> None:
         self.setupSwerve()
+        self.setupArm()
 
         self.light_strip = LightStrip(Constants.light_strip_pwm_port)
         self.light_strip.setRainbowSlow()
@@ -74,7 +78,7 @@ class RobotContainer:
         self.swerveSubsystem.setDefaultCommand(
             SwerveCommand(
                 self.swerveSubsystem,
-                self.controller,
+                self.pilotController,
                 self.getFieldOriented,
             )
         )
@@ -97,12 +101,25 @@ class RobotContainer:
         self.field_oriented = not self.field_oriented
         print("Field oriented: ", self.field_oriented)
 
+    def setupArm(self):
+        self.configureArmButtonBindings()
+
+        self.armAssemblySubsystem.setDefaultCommand(
+            MoveClawCommand(self.armAssemblySubsystem, self.operatorController)
+        )
+
+    def configureArmButtonBindings(self) -> None:
+        if self.operatorController.isConnected():
+            self.operatorController.getZeroEncoderPosition().onTrue(
+                InstantCommand(self.armAssemblySubsystem.resetArm)
+            )
+
     def configureSwerveButtonBindings(self) -> None:
-        if self.controller.isConnected():
-            self.controller.fieldOrientedBtn().onTrue(
+        if self.pilotController.isConnected():
+            self.pilotController.fieldOrientedBtn().onTrue(
                 InstantCommand(self.toggleFieldOriented)
             )
-            self.controller.resetGyroBtn().onTrue(
+            self.pilotController.resetGyroBtn().onTrue(
                 InstantCommand(self.swerveSubsystem.resetGyro)
             )
 

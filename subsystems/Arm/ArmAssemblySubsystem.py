@@ -43,3 +43,9 @@ class ArmAssemblySubsystem(SubsystemBase):
                 ArmConstants.SubsystemType.kClaw
             ]
         )
+
+    def resetArm(self):
+        self.arm.setPosition(self.arm.initialPosition)
+
+    def resetClaw(self):
+        self.claw.setPosition(self.claw.initialPosition)

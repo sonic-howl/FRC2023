@@ -12,8 +12,8 @@ class FalconConstants:
 
 class Constants:
     # !
-    maxSpeed = 0.15
-    scale_speed = 0.15
+    maxSpeed = 1
+    scale_speed = 1
     rotationCurvature = 2.0
     rotationDeadzone = 0.1
 
@@ -140,17 +140,19 @@ class ArmConstants:
     class Arm:
         motorType = rev.CANSparkMax.MotorType.kBrushed
 
+        initialPosition = 0  # degrees
+
         kCANId = 10
         kConversionFactor = 0.5532  # TODO change
         kMaxVelocityRPM = 2000  # TODO calibrate
         kMaxAccelerationRPM = 1500  # TODO calibrate
 
-        kForwardSoftLimit = 140  # degrees
+        kForwardSoftLimit = 120  # degrees
         kReverseSoftLimit = 0  # degrees
 
         getEncoderArgs = (rev.SparkMaxRelativeEncoder.Type.kQuadrature, 1024)
 
-        kP = 0  # TODO this may have to be non-zero for smart motion to work
+        kP = 0.001  # TODO this may have to be non-zero for smart motion to work
         kI = 0
         kIz = 0
         kD = 0
@@ -160,13 +162,15 @@ class ArmConstants:
         kG = 3.34
         kV = 0.47
         kA = 0.55
-        
+
         class Manual:
             maxAnglePerSecond = 90  # degrees per second
             omegaScale = 5
 
     class Claw:
         motorType = rev.CANSparkMax.MotorType.kBrushless
+
+        initialPosition = 180  # degrees
 
         kCANId = 11
         kConversionFactor = 10  # TODO change

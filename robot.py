@@ -36,8 +36,8 @@ class Robot(wp.TimedRobot):
 
     def robotPeriodic(self) -> None:
         print(
-            "current claw pos:",
-            self.robotContainer.armAssemblySubsystem.claw.armEncoder.getPosition(),
+            "current arm pos:",
+            self.robotContainer.armAssemblySubsystem.arm.armEncoder.getPosition(),
         )
         # self.robot_container.robotPeriodic()
 
