@@ -63,8 +63,7 @@ class ArmSubsystem(SubsystemBase):
             constants.kConversionFactor
             * (math.tau / 60)  # converting from RPM to radians per second
         )
-        # TODO use a constant
-        self.armEncoder.setPosition(10)
+        self.armEncoder.setPosition(self.initialPosition)
 
         self.armMotor.burnFlash()
 
@@ -91,6 +90,17 @@ class ArmSubsystem(SubsystemBase):
         self.acceleration = (velocity - self.lastVelocity) / (now - self.lastTime)
         self.lastVelocity = velocity
         self.lastTime = now
+
+        # set position to zero when there is speed being applied and the velocity is zero
+        # if self.armMotor.get()
+        # TODO test this
+        # speedThreshold = 0.25
+        # velocityThresholdRad = 0.01
+        # if (
+        #     abs(self.armMotor.getAppliedOutput()) > speedThreshold
+        #     and abs(self.armEncoder.getVelocity()) < velocityThresholdRad
+        # ):
+        #     self.armEncoder.setPosition(self.initialPosition)
 
     def setAngle(self, angle: float):
         """
