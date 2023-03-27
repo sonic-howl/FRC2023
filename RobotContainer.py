@@ -5,6 +5,7 @@ from controllers.pilot import PilotController
 
 from photonvision import PhotonCamera
 from commands.Auto.SwerveAutoCommand import SwerveAutoCommand
+from commands.CalibratePoseCommand import CalibratePoseCommand
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 from wpimath.trajectory import (
     TrajectoryConfig,
@@ -134,6 +135,12 @@ class RobotContainer:
             )
             self.pilotController.resetGyroBtn().onTrue(
                 InstantCommand(self.swerveSubsystem.resetGyro)
+            )
+    
+    def configureCalibratePoseBinding(self) -> None
+        if self.pilotController.isConnected():
+            self.pilotController.autoAlignBtn().onTrue(
+                CalibratePoseCommand(self.swerveSubsystem)
             )
 
     def getAutonomousCommand(self):

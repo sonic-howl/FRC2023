@@ -30,3 +30,6 @@ class PilotController:
 
     def resetGyroBtn(self):
         return self._controller.Y()
+    
+    def autoAlignBtn(self):
+        return self._controller.leftBumper() # Not sure if it's the bumper or trigger
