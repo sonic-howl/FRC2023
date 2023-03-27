@@ -4,7 +4,7 @@ from controllers.operator import OperatorController
 from controllers.pilot import PilotController
 
 from photonvision import PhotonCamera
-from commands.SwerveAutoCommand import SwerveAutoCommand
+from commands.Auto.SwerveAutoCommand import SwerveAutoCommand
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 from wpimath.trajectory import (
     TrajectoryConfig,
@@ -24,7 +24,7 @@ from commands2 import (
 
 from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 from commands.SwerveCommand import SwerveCommand
-from constants import Constants, SwerveConstants
+from constants import ArmConstants, Constants, SwerveConstants
 
 
 class RobotContainer:
@@ -38,12 +38,22 @@ class RobotContainer:
 
     photon_camera = PhotonCamera("photonvision")
 
+    selectedGamePiece = ArmConstants.GamePieceType.kEmpty
+
     def __init__(self) -> None:
         self.setupSwerve()
         self.setupArm()
 
-        self.light_strip = LightStrip(Constants.light_strip_pwm_port)
-        self.light_strip.setRainbowSlow()
+        # self.light_strip = LightStrip(Constants.light_strip_pwm_port)
+        # self.light_strip.setRainbowSlow()
+
+    @staticmethod
+    def getSelectedGamePiece():
+        return RobotContainer.selectedGamePiece
+
+    @staticmethod
+    def setSelectedGamePiece(gamePiece: ArmConstants.GamePieceType):
+        RobotContainer.selectedGamePiece = gamePiece
 
     def get_angle(self):
         return self.swerveSubsystem.getAngle()
@@ -92,7 +102,9 @@ class RobotContainer:
         self.rotate_to_angle_pid.enableContinuousInput(-180, 180)
         self.rotate_to_angle_pid.setTolerance(3)  # degrees tolerance
 
-        self.swerveAutoCommand = SwerveAutoCommand(self.swerveSubsystem)
+        self.swerveAutoCommand = SwerveAutoCommand(
+            self.swerveSubsystem, self.armAssemblySubsystem
+        )
 
     def getFieldOriented(self) -> bool:
         return self.field_oriented
@@ -104,6 +116,7 @@ class RobotContainer:
     def setupArm(self):
         self.configureArmButtonBindings()
 
+    def setupArmTeleopInit(self):
         self.armAssemblySubsystem.setDefaultCommand(
             MoveClawCommand(self.armAssemblySubsystem, self.operatorController)
         )

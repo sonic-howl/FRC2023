@@ -155,9 +155,9 @@ class ArmConstants:
     class Arm:
         motorType = rev.CANSparkMax.MotorType.kBrushed
 
-        initialPosition = 0  # degrees
-        angleTolerance = 4  # degrees
-        encoderOffsetHack = 0  # degrees
+        initialPosition = 0.0  # degrees
+        angleTolerance = 4.0  # degrees
+        encoderOffsetHack = 0.0  # degrees
 
         kCANId = 10
         kConversionFactor = 0.5532  # TODO change
@@ -187,10 +187,10 @@ class ArmConstants:
     class Claw:
         motorType = rev.CANSparkMax.MotorType.kBrushless
 
-        initialPosition = 180  # degrees
-        angleTolerance = 4  # degrees
+        initialPosition = 180.0  # degrees
+        angleTolerance = 4.0  # degrees
         # Hack to stop the encoder from going below 0 and underflowing
-        encoderOffsetHack = 360  # degrees
+        encoderOffsetHack = 360.0  # degrees
 
         kCANId = 11
         kConversionFactor = 10  # TODO change

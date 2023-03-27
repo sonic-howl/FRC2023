@@ -28,19 +28,20 @@ class MoveClawCommand(Command):
         return {self.armSubsystem}
 
     def execute(self) -> None:
-        self.armSubsystem.arm.armMotor.set(self.controller.getArmRotation())
-        self.armSubsystem.claw.armMotor.set(self.controller.getClawRotation())
-        # armOmega = (
-        #     self.armLimiter.calculate(self.controller.getArmRotation())
-        #     * ArmConstants.Arm.Manual.omegaScale
-        # )
-        # clawOmega = (
-        #     self.clawLimiter.calculate(self.controller.getClawRotation())
-        #     * ArmConstants.Claw.Manual.omegaScale
-        # )
+        if self.controller.isConnected():
+            self.armSubsystem.arm.armMotor.set(self.controller.getArmRotation())
+            self.armSubsystem.claw.armMotor.set(self.controller.getClawRotation())
+            # armOmega = (
+            #     self.armLimiter.calculate(self.controller.getArmRotation())
+            #     * ArmConstants.Arm.Manual.omegaScale
+            # )
+            # clawOmega = (
+            #     self.clawLimiter.calculate(self.controller.getClawRotation())
+            #     * ArmConstants.Claw.Manual.omegaScale
+            # )
 
-        # self.armSubsystem.arm.addAngle(armOmega)
-        # self.armSubsystem.claw.addAngle(clawOmega)
+            # self.armSubsystem.arm.addAngle(armOmega)
+            # self.armSubsystem.claw.addAngle(clawOmega)
 
     def end(self, interrupted: bool) -> None:
         pass

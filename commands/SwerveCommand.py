@@ -99,7 +99,7 @@ class SwerveCommand(Command):
                 )
 
             if Constants.isSimulation:
-                self.swerveSubsystem.chassisSpeeds = chassisSpeeds
+                self.swerveSubsystem.simChassisSpeeds = chassisSpeeds
 
             swerveModuleStates = SwerveConstants.kDriveKinematics.toSwerveModuleStates(
                 chassisSpeeds
@@ -107,7 +107,7 @@ class SwerveCommand(Command):
             self.swerveSubsystem.setModuleStates(swerveModuleStates)
         else:
             if Constants.isSimulation:
-                self.swerveSubsystem.chassisSpeeds = None
+                self.swerveSubsystem.simChassisSpeeds = None
 
             self.swerveSubsystem.stop()
 

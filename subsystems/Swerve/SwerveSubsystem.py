@@ -20,7 +20,7 @@ from constants import SwerveConstants, Constants
 
 
 class SwerveSubsystem(SubsystemBase):
-    chassisSpeeds: ChassisSpeeds | None = None
+    simChassisSpeeds: ChassisSpeeds | None = None
     """Meant for simulation only"""
     swerveAutoStartPose: Pose2d | None = None
     """Meant for simulation only"""
@@ -143,6 +143,9 @@ class SwerveSubsystem(SubsystemBase):
         self.front_right.stop()
         self.back_left.stop()
         self.back_right.stop()
+
+        if Constants.isSimulation:
+            self.simChassisSpeeds = None
 
     def setX(self) -> None:
         self.front_left.setDesiredState(

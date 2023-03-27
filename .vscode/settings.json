@@ -1,4 +1,4 @@
 {
   "python.formatting.provider": "black",
-  "cSpell.words": ["Feedforward", "ctre"]
+  "cSpell.words": ["ctre", "Feedforward", "ntcore", "pathplannerlib"]
 }

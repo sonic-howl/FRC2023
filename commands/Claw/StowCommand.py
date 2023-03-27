@@ -1,46 +1,35 @@
 import typing
-from commands2 import Command, Subsystem, InstantCommand
+from commands2 import Command, Subsystem
 from constants import ArmConstants
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 
 
-class StowCommand(InstantCommand):
+class StowCommand(Command):
     def __init__(
-        self, arm: ArmAssemblySubsystem, gamePieceType=ArmConstants.GamePieceType.kEmpty
+        self,
+        arm: ArmAssemblySubsystem,
+        gamePieceType=ArmConstants.GamePieceType.kEmpty,
     ) -> None:
         super().__init__()
         self.arm = arm
         self.gamePieceType = gamePieceType
 
-    def execute(self) -> None:
-        self.arm.stow(self.gamePieceType)
-        return super().execute()
+    def getRequirements(self) -> typing.Set[Subsystem]:
+        return {self.arm}
 
+    def initialize(self) -> None:
+        print("StowCommand: initialize()")
 
-# class StowCommand(Command):
-#     def __init__(
-#         self, arm: ArmAssemblySubsystem, gamePieceType=ArmConstants.GamePieceType.kEmpty
-#     ) -> None:
-#         super().__init__()
+        armAngle = ArmConstants.angles[self.gamePieceType][
+            ArmConstants.AngleType.kStow
+        ][ArmConstants.SubsystemType.kArm]
 
-#         self.arm = arm
-#         self.gamePieceType = gamePieceType
+        clawAngle = ArmConstants.angles[self.gamePieceType][
+            ArmConstants.AngleType.kStow
+        ][ArmConstants.SubsystemType.kClaw]
 
-#         self.finished = False
+        # TODO might have to add logic to avoid claw collisions using the arm's current angle.
+        self.arm.setArmAndClawAngle(armAngle, clawAngle)
 
-#     def getRequirements(self) -> typing.Set[Subsystem]:
-#         return {self.arm}
-
-#     def initialize(self) -> None:
-#         pass
-
-#     def execute(self) -> None:
-#         # this only needs to execute once since it sets a reference angle to the spark max.
-#         self.arm.stow(self.gamePieceType)
-#         self.finished = True
-
-#     def end(self, interrupted: bool) -> None:
-#         pass
-
-#     def isFinished(self) -> bool:
-#         return self.finished
+    def isFinished(self) -> bool:
+        return self.arm.atSetpoint()

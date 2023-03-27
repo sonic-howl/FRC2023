@@ -14,7 +14,9 @@ class ArmSubsystem(SubsystemBase):
     def __init__(self, constants: Type[ArmConstants.Arm | ArmConstants.Claw]) -> None:
         super().__init__()
 
-        self.initialPosition = constants.initialPosition
+        self.encoderOffsetHack = constants.encoderOffsetHack
+        self.initialPosition = constants.initialPosition + self.encoderOffsetHack
+        self.angleTolerance = constants.angleTolerance
 
         # arm
         self.armMotor = rev.CANSparkMax(constants.kCANId, constants.motorType)
@@ -82,6 +84,8 @@ class ArmSubsystem(SubsystemBase):
         self.lastVelocity = 0.0
         self.acceleration = 0.0
 
+        self.lastSetAngle = self.initialPosition
+
     def periodic(self) -> None:
         # calculating acceleration periodically so it's always up to date for the feedforward controller
         # ? maybe this could be moved into setAngle()?
@@ -113,16 +117,36 @@ class ArmSubsystem(SubsystemBase):
             math.radians(angle), velocity, self.acceleration
         )
 
+        offsetAngle = angle + self.encoderOffsetHack
+
         self.armPID.setReference(
-            angle, rev.CANSparkMax.ControlType.kSmartMotion, arbFeedforward=ffVoltage
+            offsetAngle,
+            rev.CANSparkMax.ControlType.kSmartMotion,
+            arbFeedforward=ffVoltage,
         )
+
+        self.lastSetAngle = angle
 
     def getAngle(self):
         """
         Gets the angle of the arm in degrees.
         :return: The angle of the arm in degrees.
         """
-        return self.armEncoder.getPosition() % 360
+        return self.armEncoder.getPosition() - self.encoderOffsetHack
+
+    def setTolerance(self, tolerance: float):
+        """
+        Sets the tolerance of the arm in degrees.
+        :param tolerance: The tolerance of the arm in degrees.
+        """
+        self.angleTolerance = tolerance
+
+    def atSetpoint(self):
+        """
+        Checks if the arm is at the setpoint.
+        :return: True if the arm is at the setpoint, False otherwise.
+        """
+        return abs(self.getAngle() - self.lastSetAngle) < self.angleTolerance
 
     def addAngle(self, angle: float):
         """

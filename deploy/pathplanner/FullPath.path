@@ -125,5 +125,12 @@
   "maxVelocity": 4.0,
   "maxAcceleration": null,
   "isReversed": null,
-  "markers": []
+  "markers": [
+    {
+      "position": 0.3999999999999999,
+      "names": [
+        "kCone/kStow"
+      ]
+    }
+  ]
 }
