@@ -1,0 +1,10 @@
+black 
+mypy 
+robotpy 
+robotpy[rev] 
+robotpy[navx] 
+robotpy[ctre] 
+robotpy[pathplannerlib] 
+robotpy[photonvision] 
+robotpy[commands2] 
+robotpy[apriltag]
