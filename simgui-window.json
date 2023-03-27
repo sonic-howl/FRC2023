@@ -1,6 +1,15 @@
 {
   "Docking": {
-    "Data": []
+    "Data": [
+      "DockNode      ID=0x00000002 Pos=5,493 Size=852,220 Split=X",
+      "DockNode    ID=0x00000003 Parent=0x00000002 SizeRef=151,244 Selected=0x6AE6D891",
+      "DockNode    ID=0x00000004 Parent=0x00000002 SizeRef=699,244 Selected=0x138219D4",
+      "DockNode      ID=0x00000005 Pos=2,23 Size=520,173 Split=X",
+      "DockNode    ID=0x00000008 Parent=0x00000005 SizeRef=91,173 Selected=0x39AD1970",
+      "DockNode    ID=0x00000009 Parent=0x00000005 SizeRef=427,173 Split=X",
+      "DockNode  ID=0x00000006 Parent=0x00000009 SizeRef=136,173 Selected=0xD58031C5",
+      "DockNode  ID=0x00000007 Parent=0x00000009 SizeRef=289,173 Selected=0xC8493FD8"
+    ]
   },
   "MainWindow": {
     "GLOBAL": {
@@ -22,25 +31,32 @@
     }
   },
   "Window": {
+    "###/SmartDashboard/Arm Sim": {
+      "Collapsed": "0",
+      "Pos": "865,358",
+      "Size": "327,342"
+    },
     "###/SmartDashboard/Field": {
       "Collapsed": "0",
-      "Pos": "341,432",
-      "Size": "644,282"
+      "Pos": "629,22",
+      "Size": "567,297"
     },
     "###FMS": {
       "Collapsed": "0",
-      "Pos": "198,565",
-      "Size": "283,146"
+      "DockId": "0x00000007,0",
+      "Pos": "233,23",
+      "Size": "289,173"
     },
     "###Joysticks": {
       "Collapsed": "0",
-      "Pos": "203,327",
-      "Size": "796,240"
+      "DockId": "0x00000004,0",
+      "Pos": "158,493",
+      "Size": "699,220"
     },
     "###NetworkTables": {
       "Collapsed": "0",
-      "Pos": "143,26",
-      "Size": "939,293"
+      "Pos": "5,198",
+      "Size": "617,293"
     },
     "###Other Devices": {
       "Collapsed": "0",
@@ -49,13 +65,15 @@
     },
     "###System Joysticks": {
       "Collapsed": "0",
-      "Pos": "5,335",
-      "Size": "192,244"
+      "DockId": "0x00000003,0",
+      "Pos": "5,493",
+      "Size": "151,220"
     },
     "###Timing": {
       "Collapsed": "0",
-      "Pos": "5,150",
-      "Size": "135,173"
+      "DockId": "0x00000006,0",
+      "Pos": "95,23",
+      "Size": "136,173"
     },
     "Debug##Default": {
       "Collapsed": "0",
@@ -64,8 +82,9 @@
     },
     "Robot State": {
       "Collapsed": "0",
-      "Pos": "5,20",
-      "Size": "92,99"
+      "DockId": "0x00000008,0",
+      "Pos": "2,23",
+      "Size": "91,173"
     }
   }
 }

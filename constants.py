@@ -181,7 +181,7 @@ class ArmConstants:
         kA = 0.55
 
         class Manual:
-            maxAnglePerSecond = 90  # degrees per second
+            maxAnglePerSecond = 10  # degrees per second
             omegaScale = 5
 
     class Claw:
@@ -214,7 +214,7 @@ class ArmConstants:
         kA = 0.23
 
         class Manual:
-            maxAnglePerSecond = 90  # degrees per second
+            maxAnglePerSecond = 10  # degrees per second
             omegaScale = 5
 
 
