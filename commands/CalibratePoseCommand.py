@@ -22,9 +22,9 @@ class CalibratePoseCommand(Command):
         self.newPose = self.limelightTable.getDoubleArrayTopic("botpose")
 
     def execute(self) -> None:
-            self.botpose = self.limelightTable.getEntry("botpose")
-            
-            pass
+            if self.limelightTable.getIntegerTopic("tv"):
+                self.newPose = self.limelightTable.getDoubleArrayTopic("botpose")
+                
     
     def end(self, interrupted: bool) -> None:
         print("Pose Calibrated")

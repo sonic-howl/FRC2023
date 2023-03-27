@@ -137,7 +137,7 @@ class RobotContainer:
                 InstantCommand(self.swerveSubsystem.resetGyro)
             )
     
-    def configureCalibratePoseBinding(self) -> None
+    def configureCalibratePoseBinding(self) -> None:
         if self.pilotController.isConnected():
             self.pilotController.autoAlignBtn().onTrue(
                 CalibratePoseCommand(self.swerveSubsystem)
