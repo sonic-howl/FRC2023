@@ -1,5 +1,7 @@
 from enum import Enum
 import math
+
+import wpilib
 import rev
 from wpimath.kinematics import SwerveDrive4Kinematics
 from wpimath.geometry import Translation2d
@@ -56,6 +58,7 @@ class ArmConstants:
         kArm = 0
         kClaw = 1
 
+    # ! the values here can be disregarded if they are set by the the RIO's preferences. Toggle below.
     angles: dict[GamePieceType, dict[AngleType, dict[SubsystemType, float]]] = {
         GamePieceType.kCone: {
             AngleType.kStow: {
@@ -137,10 +140,24 @@ class ArmConstants:
         },
     }
 
+    usePreferences = True
+    # ! this will override the values in angles
+    if usePreferences:
+        for gamePiece in angles:
+            for angleType in angles[gamePiece]:
+                for subsystemType in angles[gamePiece][angleType]:
+                    preferencesAngle = wpilib.Preferences.getDouble(
+                        f"{gamePiece}/{angleType}/{subsystemType}", -1
+                    )
+                    if preferencesAngle != -1:
+                        angles[gamePiece][angleType][subsystemType] = preferencesAngle
+
     class Arm:
         motorType = rev.CANSparkMax.MotorType.kBrushed
 
         initialPosition = 0  # degrees
+        angleTolerance = 4  # degrees
+        encoderOffsetHack = 0  # degrees
 
         kCANId = 10
         kConversionFactor = 0.5532  # TODO change
@@ -171,6 +188,9 @@ class ArmConstants:
         motorType = rev.CANSparkMax.MotorType.kBrushless
 
         initialPosition = 180  # degrees
+        angleTolerance = 4  # degrees
+        # Hack to stop the encoder from going below 0 and underflowing
+        encoderOffsetHack = 360  # degrees
 
         kCANId = 11
         kConversionFactor = 10  # TODO change

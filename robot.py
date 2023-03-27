@@ -1,3 +1,4 @@
+from ArmAnglesConfigurator import configureArmAnglePreferences
 from commands2 import CommandScheduler
 import wpilib as wp
 from ntcore import NetworkTableInstance
@@ -31,6 +32,11 @@ class Robot(wp.TimedRobot):
         self.robotContainer = RobotContainer()
         # testing
         # self.robot_container.buildPPAutonomousCommand()
+
+        if wp.DriverStation.isFMSAttached():
+            print("FMS is attached")
+        else:
+            closeListeners = configureArmAnglePreferences()
 
         self.swerveAutoCommand = self.robotContainer.swerveAutoCommand
 
