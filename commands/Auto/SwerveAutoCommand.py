@@ -127,9 +127,7 @@ class SwerveAutoCommand(Command):
         if Constants.isSimulation:
             self.swerveSubsystem.simChassisSpeeds = chassisSpeeds
 
-        swerveModuleStates = SwerveConstants.kDriveKinematics.toSwerveModuleStates(
-            chassisSpeeds
-        )
+        swerveModuleStates = SwerveSubsystem.toSwerveModuleStatesForecast(chassisSpeeds)
 
         self.swerveSubsystem.setModuleStates(swerveModuleStates, isClosedLoop=True)
 

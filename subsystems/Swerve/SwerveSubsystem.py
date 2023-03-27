@@ -161,6 +161,31 @@ class SwerveSubsystem(SubsystemBase):
             SwerveModuleState(0, Rotation2d.fromDegrees(-45)), True
         )
 
+    @staticmethod
+    def toSwerveModuleStatesForecast(chassisSpeeds: ChassisSpeeds):
+        """
+        Forecast the swerve module states based on the chassis speeds and the period rather than sending the current chassis speeds.
+        This helps to keep the robot moving in a straight line while spinning.
+
+        Thanks to 254: https://www.chiefdelphi.com/t/whitepaper-swerve-drive-skew-and-second-order-kinematics/416964/5
+        """
+
+        robotPoseVel = Pose2d(
+            chassisSpeeds.vx * Constants.period,
+            chassisSpeeds.vy * Constants.period,
+            Rotation2d(chassisSpeeds.omega * Constants.period),
+        )
+        twistVel = Pose2d().log(robotPoseVel)
+        updatedChassisSpeeds = ChassisSpeeds(
+            twistVel.dx / Constants.period,
+            twistVel.dy / Constants.period,
+            twistVel.dtheta / Constants.period,
+        )
+
+        return SwerveConstants.kDriveKinematics.toSwerveModuleStates(
+            updatedChassisSpeeds
+        )
+
     def setModuleStates(
         self,
         states: Tuple[
