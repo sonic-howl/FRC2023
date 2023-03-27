@@ -1,50 +1,98 @@
+from ArmAnglesConfigurator import configureArmAnglePreferences
+from commands2 import CommandScheduler
 import wpilib as wp
-import rev
-import math
-import ctre
-from wpimath.controller import PIDController
+from ntcore import NetworkTableInstance
+
+from RobotContainer import RobotContainer
+from utils.utils import printAsync
+from constants import Constants
+
 
 class Robot(wp.TimedRobot):
-    def robotInit(self):
-        # self.motor = rev.CANSparkMax(2, rev.CANSparkMax.MotorType.kBrushless)
-        # self.armPID = PIDController(0.02, 0, 0)
-        # self.motorEncoder = self.motor.getAbsoluteEncoder(rev.SparkMaxAbsoluteEncoder.Type.kDutyCycle)
-        # self.armAngleSetPoint = self.motorEncoder.getPosition()
-        # self.turn = rev.CANSparkMax(3, rev.CANSparkMax.MotorType.kBrushless)
-        # self.turnEnconder = self.turn.getAbsoluteEncoder(rev.SparkMaxAbsoluteEncoder.Type.kDutyCycle)
-        self.controller = wp.XboxController(0)
-        # kP = 0.05
-        # self.turnPID = PIDController(kP, 0, 0)
-        self.armmotor = ctre.TalonSRX(10)
-    
-    def teleopPeriodic(self):
-        # L2 = self.controller.getLeftTriggerAxis()
-        # R2 = self.controller.getRightTriggerAxis()
-        # armAngle = self.motorEncoder.getPosition() # assuming it's between 0 and 2pi
-        # armAngle -= math.pi
-        # if abs(armAngle) < 0.87:
-        #     if L2 > .5:
-        #         self.armAngleSetPoint -= .0000001
-        #     if R2 > .5:
-        #         self.armAngleSetPoint += .0000001
-        # armMotorSpeed = self.armPID.calculate(armAngle, self.armAngleSetPoint)
-        # self.motor.set(armMotorSpeed)
-        # y = self.controller.getRightY()
-        # x = self.controller.getRightX()
-        # angle = math.atan2(y, x) + math.pi
-        # angle += math.pi 
-        # angle = angle % (math.pi * 2)
-        # currentAngle = self.turnEnconder.getPosition()
-        # print("angle", angle, "currentAngle", currentAngle)
-        # motorturnSpeed = self.turnPID.calculate(currentAngle, angle)
-        # self.turn.set(motorturnSpeed)
-        armspeed = -self.controller.getLeftY()
-        self.armmotor.set(ctre.ControlMode.PercentOutput,armspeed)
+    def __init__(self, period=Constants.period) -> None:
+        super().__init__(period)
+
+    def robotInit(self) -> None:
+        Constants.isSimulation = self.isSimulation()
+
+        # self.smartDashboard = NetworkTables.getTable("SmartDashboard")
+        ntInstance = NetworkTableInstance.getDefault()
+        self.smartDashboard = ntInstance.getTable("SmartDashboard")
+        self.gyro_topic = self.smartDashboard.getDoubleTopic("Gyro Angle").publish()
+        self.turner_topic = self.smartDashboard.getDoubleTopic("Turn Encoder").publish()
+        # # create ps4 controller
+        # self.controller = wp.PS4Controller(0)
+
+        # # self.module_1 = SwerveModule()
+        # self.turner = rev.CANSparkMax(3, rev.CANSparkMaxLowLevel.MotorType.kBrushless)
+        # self.turner_encoder = self.turner.getAbsoluteEncoder(
+        #     rev.SparkMaxAbsoluteEncoder.Type.kDutyCycle
+        # )
+
+        self.robotContainer = RobotContainer()
+        # testing
+        # self.robot_container.buildPPAutonomousCommand()
+
+        if wp.DriverStation.isFMSAttached():
+            print("FMS is attached")
+        else:
+            closeListeners = configureArmAnglePreferences()
+
+        self.swerveAutoCommand = self.robotContainer.swerveAutoCommand
+
+    lastArmPos = 0.0
+
+    def robotPeriodic(self) -> None:
+        armPos = self.robotContainer.armAssemblySubsystem.arm.armEncoder.getPosition()
+        if armPos != self.lastArmPos:
+            print(
+                "current arm pos:",
+                armPos,
+            )
+            # self.robot_container.robotPeriodic()
+        self.lastArmPos = armPos
+
+        self.gyro_topic.set(self.robotContainer.get_angle())
+
+        self.turner_topic.set(
+            # self.robot_container.swerve_subsystem.front_left.turn_encoder.getPosition()
+            # % math.pi
+            # * 2
+            self.robotContainer.swerveSubsystem.front_left.getPosition().angle.degrees()
+        )
+
+        try:
+            CommandScheduler.getInstance().run()
+        except Exception as e:
+            printAsync("Caught exception:", e)
+
+    def autonomousInit(self) -> None:
+        # auto_command = self.robot_container.getAutonomousCommand()
+        # if auto_command is not None:
+        #     auto_command.schedule()
+        #     print("Auto command scheduled")
+        # self.robot_container.autonomousInit()
+
+        self.swerveAutoCommand.schedule()
+
+    def autonomousExit(self) -> None:
+        self.swerveAutoCommand.cancel()
+
+    # def autonomousPeriodic(self) -> None:
+    #     self.robot_container.autonomousPeriodic()
+
+    def teleopInit(self) -> None:
+        self.robotContainer.setupArmTeleopInit()
+
+    # def teleopPeriodic(self) -> None:
+    #     self.robot_container.teleopPeriodic()
+
+    #     # TODO maybe stop the auto command here if executing the swerve drive command doesn't stop it.
+    #     # There may not need to be any teleop code here if everything uses commands.
+    #     # The commands are run using the command scheduler which is run in robotPeriodic.
+    #     # The CommandScheduler automatically runs the appropriate code depending on the state of the competition (disabled, autonomous, teleoperated).
+    #     pass
 
 
-
-    def robotPeriodic(self):
-        pass
-    
-if __name__ == '__main__':
+if __name__ == "__main__":
     wp.run(Robot)

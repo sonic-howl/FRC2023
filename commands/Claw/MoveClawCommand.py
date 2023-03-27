@@ -1,0 +1,64 @@
+import typing
+from commands2 import Command, Subsystem
+from constants import ArmConstants
+from utils.utils import dz, sgn
+from wpimath.filter import SlewRateLimiter
+
+from controllers.operator import OperatorController
+from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
+
+
+class MoveClawCommand(Command):
+    """Allows operator to move the arm and claw manually using controller axes."""
+
+    def __init__(
+        self, armSubsystem: ArmAssemblySubsystem, controller: OperatorController
+    ):
+        super().__init__()
+
+        self.armSubsystem = armSubsystem
+        self.controller = controller
+
+        self.armLimiter = SlewRateLimiter(ArmConstants.Arm.Manual.maxAnglePerSecond)
+        self.clawLimiter = SlewRateLimiter(ArmConstants.Claw.Manual.maxAnglePerSecond)
+
+        self.lastArmAxis = 0
+        self.lastClawAxis = 0
+
+    def initialize(self) -> None:
+        pass
+
+    def getRequirements(self) -> typing.Set[Subsystem]:
+        return {self.armSubsystem}
+
+    def execute(self) -> None:
+        if self.controller.isConnected():
+            # self.armSubsystem.arm.armMotor.set(self.controller.getArmRotation())
+            # self.armSubsystem.claw.armMotor.set(self.controller.getClawRotation())
+
+            armAxis = dz(self.controller.getArmRotation())
+            if armAxis == 0 or sgn(self.lastArmAxis) != sgn(armAxis):
+                self.armLimiter.reset(0)
+            armOmega = self.armLimiter.calculate(
+                armAxis * ArmConstants.Arm.Manual.omegaScale
+            )
+            self.lastArmAxis = armAxis
+
+            clawAxis = dz(self.controller.getClawRotation())
+            if clawAxis == 0 or sgn(self.lastClawAxis) != sgn(clawAxis):
+                self.clawLimiter.reset(0)
+            clawOmega = self.clawLimiter.calculate(
+                clawAxis * ArmConstants.Claw.Manual.omegaScale
+            )
+            self.lastClawAxis = clawAxis
+
+            # print("armOmega:", armOmega, "clawOmega:", clawOmega)
+
+            self.armSubsystem.arm.addAngle(armOmega)
+            self.armSubsystem.claw.addAngle(clawOmega)
+
+    def end(self, interrupted: bool) -> None:
+        pass
+
+    def isFinished(self) -> bool:
+        return False
