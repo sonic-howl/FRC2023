@@ -1,14 +1,15 @@
-import math
-from commands2 import Command, Subsystem
-from utils.utils import calcAxisSpeedWithCurvatureAndDeadzone, dz, sgn
-from wpimath.controller import PIDController
-from wpimath.kinematics import ChassisSpeeds
-from wpimath.filter._filter import SlewRateLimiter
-from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 from typing import Callable, Set
 
-from constants import Constants, SwerveConstants
+from commands2 import Command, Subsystem
+from wpimath.controller import PIDController
+from wpimath.filter._filter import SlewRateLimiter
+from wpimath.kinematics import ChassisSpeeds
+
+from constants.RobotConstants import RobotConstants
+from constants.SwerveConstants import SwerveConstants
 from controllers.pilot import PilotController
+from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
+from utils.utils import calcAxisSpeedWithCurvatureAndDeadzone, dz
 
 
 class SwerveCommand(Command):
@@ -39,7 +40,7 @@ class SwerveCommand(Command):
             SwerveConstants.kPRobotTurn,
             SwerveConstants.kIRobotTurn,
             SwerveConstants.kDRobotTurn,
-            period=Constants.period,
+            period=RobotConstants.period,
         )
         self.rotate_to_angle_pid.enableContinuousInput(-180, 180)
         self.rotate_to_angle_pid.setTolerance(5)  # degrees tolerance
@@ -98,7 +99,7 @@ class SwerveCommand(Command):
                     z,
                 )
 
-            if Constants.isSimulation:
+            if RobotConstants.isSimulation:
                 self.swerveSubsystem.simChassisSpeeds = chassisSpeeds
 
             swerveModuleStates = SwerveSubsystem.toSwerveModuleStatesForecast(
@@ -106,7 +107,7 @@ class SwerveCommand(Command):
             )
             self.swerveSubsystem.setModuleStates(swerveModuleStates)
         else:
-            if Constants.isSimulation:
+            if RobotConstants.isSimulation:
                 self.swerveSubsystem.simChassisSpeeds = None
 
             self.swerveSubsystem.stop()

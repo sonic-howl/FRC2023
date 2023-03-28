@@ -1,13 +1,13 @@
-from typing import Type
 import math
-
-import wpilib
+from typing import Type
 
 import rev
+import wpilib
 from commands2 import SubsystemBase
 from wpimath.controller import ArmFeedforward
 
-from constants import ArmConstants, Constants
+from constants.ArmConstants import ArmConstants
+from constants.RobotConstants import RobotConstants
 
 
 class ArmSubsystem(SubsystemBase):
@@ -41,7 +41,7 @@ class ArmSubsystem(SubsystemBase):
         # PID setup (not used)
         # ? or maybe it's used by Smart Motion?
         self.armPID = self.armMotor.getPIDController()
-        self.armPID.setOutputRange(-Constants.maxSpeed, Constants.maxSpeed)
+        self.armPID.setOutputRange(-RobotConstants.maxSpeed, RobotConstants.maxSpeed)
         self.armPID.setP(constants.kP)
         self.armPID.setI(constants.kI)
         self.armPID.setD(constants.kD)

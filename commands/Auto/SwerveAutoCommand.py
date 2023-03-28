@@ -1,24 +1,25 @@
 import typing
-from .PathPlanner import PathTraverser
-from commands.Claw.StowCommand import StowCommand
 
 from commands2 import Command, Subsystem
-from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
-from utils.utils import printAsync
-
-from constants import ArmConstants, Constants, GamePieceType, SwerveConstants
 from pathplannerlib import PathPlannerTrajectory
-
-# from pathplannerlib._pathplannerlib.controllers import PPHolonomicDriveController
-from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 from wpimath.controller import (
+    HolonomicDriveController,
     PIDController,
     ProfiledPIDControllerRadians,
-    HolonomicDriveController,
 )
-
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.trajectory import TrapezoidProfileRadians
+
+from commands.Claw.StowCommand import StowCommand
+from constants.ArmConstants import ArmConstants
+from constants.GameConstants import GamePieceType
+from constants.RobotConstants import RobotConstants
+from constants.SwerveConstants import SwerveConstants
+from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
+from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
+from utils.utils import printAsync
+
+from .PathPlanner import PathTraverser
 
 
 class SwerveAutoCommand(Command):
@@ -33,8 +34,8 @@ class SwerveAutoCommand(Command):
         self.armAssemblySubsystem = armAssemblySubsystem
 
         # TODO maybe move these to the swerve class, or have something similar
-        x_pid = PIDController(1, 0, 0, period=Constants.period)
-        y_pid = PIDController(1, 0, 0, period=Constants.period)
+        x_pid = PIDController(1, 0, 0, period=RobotConstants.period)
+        y_pid = PIDController(1, 0, 0, period=RobotConstants.period)
         theta_pid = ProfiledPIDControllerRadians(
             0.5,
             0,
@@ -43,7 +44,7 @@ class SwerveAutoCommand(Command):
                 SwerveConstants.kDriveMaxTurnMetersPerSecond,
                 SwerveConstants.kDriveMaxTurnAccelerationMetersPerSecond,
             ),
-            period=Constants.period,
+            period=RobotConstants.period,
         )
         self.controller = HolonomicDriveController(x_pid, y_pid, theta_pid)
         self.controller.setTolerance(Pose2d(0.05, 0.05, Rotation2d.fromDegrees(2)))
@@ -124,7 +125,7 @@ class SwerveAutoCommand(Command):
         # chassis_speeds: {chassisSpeeds}"""
         #         )
 
-        if Constants.isSimulation:
+        if RobotConstants.isSimulation:
             self.swerveSubsystem.simChassisSpeeds = chassisSpeeds
 
         swerveModuleStates = SwerveSubsystem.toSwerveModuleStatesForecast(chassisSpeeds)

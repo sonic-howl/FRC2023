@@ -1,10 +1,11 @@
 import typing
+
 from commands2 import Command, Subsystem
-from constants import ArmConstants
-from utils.utils import dz, sgn
 from wpimath.filter import SlewRateLimiter
 
+from constants.ArmConstants import ArmConstants
 from controllers.operator import OperatorController
+from utils.utils import sgn
 
 if typing.TYPE_CHECKING:
     from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem

@@ -1,5 +1,6 @@
+from constants.ArmConstants import ArmConstants
+
 from .ArmCommand import ArmCommand
-from constants import ArmConstants
 
 
 class StowCommand(ArmCommand):

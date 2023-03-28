@@ -1,6 +1,8 @@
 import typing
+
 from commands2 import Command, Subsystem
-from constants import GamePieceType
+
+from constants.GameConstants import GamePieceType
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 
 

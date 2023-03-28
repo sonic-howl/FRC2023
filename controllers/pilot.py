@@ -1,12 +1,14 @@
 from threading import Thread
 from time import sleep
 from typing import Callable
+
 from commands2.button import CommandXboxController
-from constants import Constants
+
+from constants.RobotConstants import RobotConstants
 
 
 class PilotController:
-    _controller = CommandXboxController(Constants.pilot_controller_id)
+    _controller = CommandXboxController(RobotConstants.pilot_controller_id)
 
     def isConnected(self):
         return self._controller.isConnected()

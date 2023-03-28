@@ -1,19 +1,16 @@
-from controllers.operator import OperatorController
-from controllers.pilot import PilotController
-
+from commands2 import InstantCommand
 from photonvision import PhotonCamera
-from commands2 import (
-    InstantCommand,
-)
-from commands.Auto.SwerveAutoCommand import SwerveAutoCommand
-from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
-from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
-from subsystems.Pickup.PickupSubsystem import PickupSubsystem
 
-from commands.SwerveCommand import SwerveCommand
+from commands.Auto.SwerveAutoCommand import SwerveAutoCommand
 from commands.Claw.MoveClawCommand import MoveClawCommand
 from commands.Pickup.PickupCommand import PickupCommand
-from constants import GamePieceType
+from commands.SwerveCommand import SwerveCommand
+from constants.GameConstants import GamePieceType
+from controllers.operator import OperatorController
+from controllers.pilot import PilotController
+from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
+from subsystems.Pickup.PickupSubsystem import PickupSubsystem
+from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 
 
 class RobotContainer:

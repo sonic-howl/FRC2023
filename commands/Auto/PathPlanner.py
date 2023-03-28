@@ -4,7 +4,7 @@ import wpilib
 from commands2 import Command
 from pathplannerlib import PathPlanner, PathPlannerTrajectory
 
-from constants import SwerveConstants
+from constants.SwerveConstants import SwerveConstants
 
 
 class PathTraverser:

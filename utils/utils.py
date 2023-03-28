@@ -1,6 +1,6 @@
 from threading import Thread
 
-from constants import Constants
+from constants.RobotConstants import RobotConstants
 
 
 def printAsync(*args, **kwargs) -> None:
@@ -13,15 +13,15 @@ def sgn(x: float) -> float:
     return -1 if x < 0 else 1
 
 
-def dz(x: float, dz=Constants.controller_deadzone):
+def dz(x: float, dz=RobotConstants.controller_deadzone):
     return x if abs(x) > dz else 0
 
 
 def calcAxisSpeedWithCurvatureAndDeadzone(
     x: float,
-    c=Constants.rotationCurvature,
-    b=Constants.rotationDeadzone,
-    dz=Constants.controller_deadzone,
+    c=RobotConstants.rotationCurvature,
+    b=RobotConstants.rotationDeadzone,
+    dz=RobotConstants.controller_deadzone,
 ):
     """
     Calculate the speed of the axis with curvature and deadzone

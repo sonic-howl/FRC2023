@@ -1,5 +1,5 @@
-from .ArmCommand import ArmCommand
-from constants import ArmConstants
+from commands.Claw.ArmCommand import ArmCommand
+from constants.ArmConstants import ArmConstants
 
 
 class FloorPickupCommand(ArmCommand):

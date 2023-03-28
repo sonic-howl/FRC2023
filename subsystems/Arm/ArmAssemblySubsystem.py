@@ -1,8 +1,8 @@
 from commands2 import SubsystemBase
 
-from constants import ArmConstants
+from constants.ArmConstants import ArmConstants
 from controllers.operator import OperatorController
-from .ArmSubsystem import ArmSubsystem
+from subsystems.Arm.ArmSubsystem import ArmSubsystem
 
 
 class ArmAssemblySubsystem(SubsystemBase):

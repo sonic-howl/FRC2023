@@ -1,8 +1,9 @@
 import typing
-from commands2 import Command, Subsystem
-from constants import GamePieceType
-from controllers.operator import OperatorController
 
+from commands2 import Command, Subsystem
+
+from constants.GameConstants import GamePieceType
+from controllers.operator import OperatorController
 from subsystems.Pickup.PickupSubsystem import PickupSubsystem
 
 

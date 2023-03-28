@@ -1,7 +1,9 @@
 from threading import Thread
-from constants import ArmConstants
+
 from ntcore import Event, NetworkTableInstance, EventFlags
 import wpilib
+
+from constants.ArmConstants import ArmConstants
 
 
 def configureArmAnglePreferences():

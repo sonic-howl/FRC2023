@@ -1,19 +1,21 @@
-from ntcore import NetworkTableInstance
-import rev
-import ctre
-from wpimath.kinematics import SwerveModuleState, SwerveModulePosition
-from wpimath.geometry import Rotation2d
 import math
 
-from constants import FalconConstants, SwerveConstants, Constants
+import ctre
+import rev
+from ntcore import NetworkTableInstance
+from wpimath.geometry import Rotation2d
+from wpimath.kinematics import SwerveModulePosition, SwerveModuleState
+
+from constants.RobotConstants import RobotConstants
+from constants.SwerveConstants import SwerveConstants
 
 
 def scaleSpeed(speed: float) -> float:
-    speed *= Constants.scale_speed
-    if speed > Constants.maxSpeed:
-        speed = Constants.maxSpeed
-    elif speed < -Constants.maxSpeed:
-        speed = -Constants.maxSpeed
+    speed *= RobotConstants.scale_speed
+    if speed > RobotConstants.maxSpeed:
+        speed = RobotConstants.maxSpeed
+    elif speed < -RobotConstants.maxSpeed:
+        speed = -RobotConstants.maxSpeed
     return speed
 
 
@@ -38,9 +40,9 @@ class SwerveModule:
         # create motors
         # drive motor
         self.drive_motor = ctre.WPI_TalonFX(drive_motor_id)
-        self.drive_motor.configPeakOutputReverse(-Constants.maxSpeed)
-        self.drive_motor.configPeakOutputForward(Constants.maxSpeed)
-        self.drive_motor.configClosedLoopPeakOutput(0, Constants.maxSpeed)
+        self.drive_motor.configPeakOutputReverse(-RobotConstants.maxSpeed)
+        self.drive_motor.configPeakOutputForward(RobotConstants.maxSpeed)
+        self.drive_motor.configClosedLoopPeakOutput(0, RobotConstants.maxSpeed)
         self.drive_motor.configFactoryDefault()
         self.drive_motor.setNeutralMode(ctre.NeutralMode.Brake)
         self.drive_motor.configStatorCurrentLimit(
