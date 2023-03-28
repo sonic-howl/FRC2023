@@ -1,36 +1,25 @@
-from LightStrip import LightStrip
-from commands.Claw.MoveClawCommand import MoveClawCommand
+from threading import Thread
+from time import sleep
+
 from controllers.operator import OperatorController
 from controllers.pilot import PilotController
 
 from photonvision import PhotonCamera
-from commands.Auto.SwerveAutoCommand import SwerveAutoCommand
-from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
-from wpimath.trajectory import (
-    TrajectoryConfig,
-    TrajectoryGenerator,
-    TrapezoidProfileRadians,
-)
-from wpimath.geometry import Pose2d, Translation2d, Rotation2d
-from wpimath.controller import (
-    PIDController,
-    ProfiledPIDControllerRadians,
-)
 from commands2 import (
     InstantCommand,
-    Swerve4ControllerCommand,
-    SequentialCommandGroup,
 )
-
+from commands.Auto.SwerveAutoCommand import SwerveAutoCommand
+from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
+from subsystems.Pickup.PickupSubsystem import PickupSubsystem
+
 from commands.SwerveCommand import SwerveCommand
-from constants import ArmConstants, Constants, SwerveConstants
+from commands.Claw.MoveClawCommand import MoveClawCommand
+from commands.Pickup.PickupCommand import PickupCommand
+from constants import GamePieceType
 
 
 class RobotContainer:
-    swerveSubsystem = SwerveSubsystem()
-    armAssemblySubsystem = ArmAssemblySubsystem()
-
     pilotController = PilotController()
     operatorController = OperatorController()
 
@@ -38,11 +27,18 @@ class RobotContainer:
 
     photon_camera = PhotonCamera("photonvision")
 
-    selectedGamePiece = ArmConstants.GamePieceType.kEmpty
+    selectedGamePiece = GamePieceType.kEmpty
 
     def __init__(self) -> None:
+        self.swerveSubsystem = SwerveSubsystem()
+        self.armAssemblySubsystem = ArmAssemblySubsystem(self.operatorController)
+        self.pickup = PickupSubsystem(self.operatorController)
+
         self.setupSwerve()
         self.setupArm()
+        self.setupPickup()
+
+        self.configureButtonBindings()
 
         # self.light_strip = LightStrip(Constants.light_strip_pwm_port)
         # self.light_strip.setRainbowSlow()
@@ -52,7 +48,7 @@ class RobotContainer:
         return RobotContainer.selectedGamePiece
 
     @staticmethod
-    def setSelectedGamePiece(gamePiece: ArmConstants.GamePieceType):
+    def setSelectedGamePiece(gamePiece: GamePieceType):
         RobotContainer.selectedGamePiece = gamePiece
 
     def get_angle(self):
@@ -64,27 +60,44 @@ class RobotContainer:
             transform_to_target = target.getBestCameraToTarget()
             # TODO
 
-    # def robotPeriodic(self):
-    #     self.light_strip.update()
+    def configureButtonBindings(self) -> None:
+        c1Connected = self.pilotController.isConnected()
+        c2Connected = self.operatorController.isConnected()
+        if c1Connected:
+            self.configureSwerveButtonBindings()
+        else:
 
-    #     self.swerve_subsystem.periodic()
+            def checkC1Connection():
+                while not self.pilotController.isConnected():
+                    sleep(1)
+                self.configureSwerveButtonBindings()
 
-    #     if self.controller.isConnected():
-    #         if self.controller.getAButton():
-    #             self.vision_track()
+            Thread(target=checkC1Connection).start()
+        if c2Connected:
+            self.configureGeneralButtonBindings()
+            self.configureArmButtonBindings()
+        else:
 
-    # def autonomousInit(self):
-    #     self.swerve_auto_command.initialize()
+            def checkC2Connection():
+                while not self.operatorController.isConnected():
+                    sleep(1)
+                self.configureGeneralButtonBindings()
+                self.configureArmButtonBindings()
 
-    # def autonomousPeriodic(self) -> None:
-    #     if self.swerve_auto_command.isFinished():
-    #         self.swerve_subsystem.stop()
-    #     else:
-    #         self.swerve_auto_command.execute()
+            Thread(target=checkC2Connection).start()
 
-    def setupSwerve(self):
-        self.configureSwerveButtonBindings()
+    def configureGeneralButtonBindings(self) -> None:
+        self.operatorController.getConeSelected().onTrue(
+            InstantCommand(lambda: self.setSelectedGamePiece(GamePieceType.kCone))
+        )
+        self.operatorController.getCubeSelected().onTrue(
+            InstantCommand(lambda: self.setSelectedGamePiece(GamePieceType.kCube))
+        )
+        self.operatorController.getEmptySelected().onTrue(
+            InstantCommand(lambda: self.setSelectedGamePiece(GamePieceType.kEmpty))
+        )
 
+    def setupSwerve(self) -> None:
         self.swerveSubsystem.setDefaultCommand(
             SwerveCommand(
                 self.swerveSubsystem,
@@ -92,15 +105,6 @@ class RobotContainer:
                 self.getFieldOriented,
             )
         )
-
-        self.rotate_to_angle_pid = PIDController(
-            SwerveConstants.kPRobotTurn,
-            SwerveConstants.kIRobotTurn,
-            SwerveConstants.kDRobotTurn,
-            period=Constants.period,
-        )
-        self.rotate_to_angle_pid.enableContinuousInput(-180, 180)
-        self.rotate_to_angle_pid.setTolerance(3)  # degrees tolerance
 
         self.swerveAutoCommand = SwerveAutoCommand(
             self.swerveSubsystem, self.armAssemblySubsystem
@@ -113,30 +117,32 @@ class RobotContainer:
         self.field_oriented = not self.field_oriented
         print("Field oriented: ", self.field_oriented)
 
-    def setupArm(self):
-        self.configureArmButtonBindings()
+    def configureSwerveButtonBindings(self) -> None:
+        self.pilotController.fieldOrientedBtn().onTrue(
+            InstantCommand(self.toggleFieldOriented)
+        )
+        self.pilotController.resetGyroBtn().onTrue(
+            InstantCommand(self.swerveSubsystem.resetGyro)
+        )
 
-    def setupArmTeleopInit(self):
+    def setupArm(self):
         self.armAssemblySubsystem.setDefaultCommand(
             MoveClawCommand(self.armAssemblySubsystem, self.operatorController)
         )
 
     def configureArmButtonBindings(self) -> None:
-        if self.operatorController.isConnected():
-            self.operatorController.getZeroEncoderPosition().onTrue(
-                InstantCommand(self.armAssemblySubsystem.resetArm)
-            )
+        self.operatorController.getZeroEncoderPosition().onTrue(
+            InstantCommand(self.armAssemblySubsystem.resetArm)
+        )
 
-    def configureSwerveButtonBindings(self) -> None:
-        if self.pilotController.isConnected():
-            self.pilotController.fieldOrientedBtn().onTrue(
-                InstantCommand(self.toggleFieldOriented)
+    def setupPickup(self):
+        self.pickup.setDefaultCommand(
+            PickupCommand(
+                self.pickup, self.operatorController, self.getSelectedGamePiece
             )
-            self.pilotController.resetGyroBtn().onTrue(
-                InstantCommand(self.swerveSubsystem.resetGyro)
-            )
+        )
 
-    def getAutonomousCommand(self):
+    """ def getAutonomousCommand(self):
         trajectory_config = TrajectoryConfig(
             SwerveConstants.kDriveMaxMetersPerSecond,
             SwerveConstants.kDriveMaxAccelerationMetersPerSecond,
@@ -177,4 +183,4 @@ class RobotContainer:
             InstantCommand(self.swerveSubsystem.resetOdometer, trajectory.initialPose),
             swerve_command,
             InstantCommand(self.swerveSubsystem.stop),
-        )
+        ) """
