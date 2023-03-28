@@ -31,9 +31,9 @@ class PickupCommand(Command):
 
         # read axes and set speed depending on the game piece selected.
         # if the limit switch is hit while the cube is selected, stop motion
-        relSpeed = self.controller.getPickupReleaseSpeed()
-        intakeSpeed = self.controller.getPickupReleaseSpeed()
-        speed = relSpeed + intakeSpeed
+        releaseSpeed = self.controller.getPickupReleaseSpeed()
+        intakeSpeed = self.controller.getPickupIntakeSpeed()
+        speed = releaseSpeed + intakeSpeed
 
         if self.stopPickupOnLimitSwitchWhileTriggerHeld:
             if speed == 0:
