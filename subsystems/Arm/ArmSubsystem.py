@@ -61,10 +61,12 @@ class ArmSubsystem(SubsystemBase):
         self.armEncoder = self.armMotor.getEncoder(
             *constants.getEncoderArgs
         )  # when brushed with data port encoder wire: rev.SparkMaxRelativeEncoder.Type.kQuadrature, 1024
-        self.armEncoder.setPositionConversionFactor(constants.kConversionFactor)
+        self.armEncoder.setPositionConversionFactor(constants.kConversionFactorToDeg)
         self.armEncoder.setVelocityConversionFactor(
-            constants.kConversionFactor
-            * (math.tau / 60)  # converting from RPM to radians per second
+            math.radians(
+                constants.kConversionFactorToDeg
+                * (math.tau / 60)  # converting from RPM to degrees per second
+            )  # to radians per second
         )
         self.armEncoder.setPosition(self.initialPosition)
 

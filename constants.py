@@ -162,7 +162,7 @@ class ArmConstants:
         encoderOffsetHack = 0.0  # degrees
 
         kCANId = 10
-        kConversionFactor = 0.5532  # TODO change
+        kConversionFactorToDeg = 0.5532  # TODO change
         kMaxVelocityRPM = 2000  # TODO calibrate
         kMaxAccelerationRPM = 1500  # TODO calibrate
 
@@ -177,10 +177,10 @@ class ArmConstants:
         kD = 0
         kFF = 0
         # TODO calibrate
-        kS = 0.05
-        kG = 3.34
-        kV = 0.47
-        kA = 0.55
+        kS = 0.02
+        kG = 1.0
+        kV = 0.0
+        kA = 0.0
 
         class Manual:
             maxAnglePerSecond = 10  # degrees per second
@@ -196,7 +196,7 @@ class ArmConstants:
         encoderOffsetHack = 360.0  # degrees
 
         kCANId = 11
-        kConversionFactor = 10  # TODO change
+        kConversionFactorToDeg = 10  # TODO change
         kMaxVelocityRPM = 1000  # TODO calibrate
         kMaxAccelerationRPM = 500  # TODO calibrate
 
@@ -212,9 +212,9 @@ class ArmConstants:
         kFF = 0
         # TODO calibrate
         kS = 0
-        kG = 9.04
-        kV = 0.10
-        kA = 0.23
+        kG = -0.5
+        kV = 0.0
+        kA = 0.0
 
         class Manual:
             maxAnglePerSecond = 10  # degrees per second
