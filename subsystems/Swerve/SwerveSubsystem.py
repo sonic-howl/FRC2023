@@ -11,6 +11,7 @@ from wpimath.kinematics import (
 )
 from wpimath.geometry import Rotation2d, Pose2d
 from wpimath.kinematics import SwerveDrive4Kinematics
+from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpilib import SPI, Field2d, SmartDashboard
 from navx import AHRS
 from commands2 import SubsystemBase
@@ -50,32 +51,39 @@ class SwerveSubsystem(SubsystemBase):
         chassis_angular_offset=SwerveConstants.br_chassis_angular_offset,
     )
 
-    gyro = (
-        AHRS(
-            wpilib.SerialPort.Port.kUSB,
-            AHRS.SerialDataType.kProcessedData,
-            int(1 / Constants.period),
-        )
-        if Constants.navxPort == Constants.NavXPort.kUSB
-        else AHRS(
-            wpilib.SPI.Port.kMXP,
-            int(1 / Constants.period),
-        )
-    )
-
-    odometer = SwerveDrive4Odometry(
-        SwerveConstants.kDriveKinematics,
-        Rotation2d(),
-        (
-            front_left.getPosition(),
-            front_right.getPosition(),
-            back_left.getPosition(),
-            back_right.getPosition(),
-        ),
-    )
-
     def __init__(self) -> None:
         super().__init__()
+
+        self.gyro = (
+            AHRS(
+                wpilib.SerialPort.Port.kUSB,
+                AHRS.SerialDataType.kProcessedData,
+                int(1 / Constants.period),
+            )
+            if Constants.navxPort == Constants.NavXPort.kUSB
+            else AHRS(
+                wpilib.SPI.Port.kMXP,
+                int(1 / Constants.period),
+            )
+        )
+
+        ntInstance = NetworkTableInstance.getDefault()
+        self.limelightTable = ntInstance.getTable("limelight")
+        self.tv = self.limelightTable.getIntegerTopic('tv').subscribe(0)
+        self.ta = self.limelightTable.getDoubleTopic('ta').subscribe(0.0)
+
+        self.odometer = SwerveDrive4PoseEstimator(
+            SwerveConstants.kDriveKinematics,
+            Rotation2d(),
+                        (
+                self.front_left.getPosition(),
+                self.front_right.getPosition(),
+                self.back_left.getPosition(),
+                self.back_right.getPosition(),
+            ),
+            Pose2d()
+        )
+
 
         def resetGyro():
             """reset gyro after it's calibration of 1s"""
@@ -102,7 +110,7 @@ class SwerveSubsystem(SubsystemBase):
         return Rotation2d.fromDegrees(self.getAngle())
 
     def getPose(self) -> Pose2d:
-        return self.odometer.getPose()
+        return self.odometer.getEstimatedPosition()
 
     def resetGyro(self):
         # self.gyro.zeroYaw()
@@ -117,11 +125,13 @@ class SwerveSubsystem(SubsystemBase):
     def resetOdometer(self, pose: Pose2d = Pose2d()):
         self.odometer.resetPosition(
             self.getRotation2d(),
-            pose,
+            (
             self.front_left.getPosition(),
             self.front_right.getPosition(),
             self.back_left.getPosition(),
             self.back_right.getPosition(),
+            ),
+            pose,
         )
 
     def periodic(self) -> None:
@@ -130,12 +140,23 @@ class SwerveSubsystem(SubsystemBase):
         if not Constants.isSimulation:
             self.field.setRobotPose(self.getPose())
 
+        # Correct for pose when an april tag is in view of the limelight at a certain distance
+        if self.tv.get() and self.ta.get() > SwerveConstants.minimumAprilTagArea:
+            self.odometer.addVisionMeasurement(
+                self.limelightTable.getDoubleArrayTopic('botpose'),
+                self.limelightTable.getFloatTopic('ts') / 1000 # Outputs milliseconds, requiers seconds
+            )
+            # Debug
+            SmartDashboard.putData("Estimate robot pose", self.odometer.getEstimatedPosition())
+
         self.odometer.update(
             self.getRotation2d(),
+            (
             self.front_left.getPosition(),
             self.front_right.getPosition(),
             self.back_left.getPosition(),
             self.back_right.getPosition(),
+            ),
         )
 
     def stop(self) -> None:

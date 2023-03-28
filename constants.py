@@ -305,3 +305,6 @@ class SwerveConstants:
     kMaxMeasuredVelocityEncoderUnits = 18000
     typical_drive_velocity = 0.8
     kFDriving = (typical_drive_velocity * 1023) / kMaxMeasuredVelocityEncoderUnits
+
+    # Minimum area that the april tag must take up in the limelight. Used to auto calibrate pose
+    minimumAprilTagArea = 0.5

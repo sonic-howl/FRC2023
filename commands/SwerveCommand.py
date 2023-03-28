@@ -16,7 +16,7 @@ class SwerveCommand(Command):
         self,
         swerveSubsystem: SwerveSubsystem,
         controller: PilotController,
-        
+        getFieldOriented: Callable[[], bool],
     ) -> None:
         super().__init__()
 

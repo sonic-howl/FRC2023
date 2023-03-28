@@ -19,8 +19,8 @@
       "style": "0",
       "userScale": "2",
       "width": "1480",
-      "xpos": "351",
-      "ypos": "162"
+      "xpos": "329",
+      "ypos": "87"
     }
   },
   "Table": {
@@ -60,7 +60,7 @@
     },
     "###Other Devices": {
       "Collapsed": "0",
-      "Pos": "1201,20",
+      "Pos": "1137,27",
       "Size": "284,695"
     },
     "###System Joysticks": {

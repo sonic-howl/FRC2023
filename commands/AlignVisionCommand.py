@@ -4,6 +4,7 @@ from commands2 import Command, Subsystem
 from typing import Callable, Set
 from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 from controllers.pilot import PilotController
+from wpimath.estimator import SwerveDrive4PoseEstimator
 
 
 class CalibratePoseCommand(Command):
@@ -19,11 +20,11 @@ class CalibratePoseCommand(Command):
 
     def initialize(self) -> None:
         print("Vision Command initialized")
-        self.newPose = self.limelightTable.getDoubleArrayTopic("botpose")
 
     def execute(self) -> None:
-            if self.limelightTable.getIntegerTopic("tv"):
-                self.newPose = self.limelightTable.getDoubleArrayTopic("botpose")
+        if self.limelightTable.getIntegerTopic("tv"):
+            self.newPose = self.limelightTable.getDoubleArrayTopic("botpose")
+
                 
     
     def end(self, interrupted: bool) -> None:
