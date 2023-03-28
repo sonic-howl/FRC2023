@@ -1,3 +1,6 @@
+from threading import Thread
+from time import sleep
+from typing import Callable
 from commands2.button import CommandXboxController
 from constants import Constants
 from utils.utils import dz
@@ -8,6 +11,14 @@ class OperatorController:
 
     def isConnected(self):
         return self._controller.isConnected()
+
+    def onceConnected(self, cb: Callable[[], None], checkInterval=1):
+        def checkConnection():
+            while not self.isConnected():
+                sleep(checkInterval)
+            cb()
+
+        Thread(target=checkConnection).start()
 
     def getTopGrid(self):
         return self._controller.Y()

@@ -1,6 +1,3 @@
-from threading import Thread
-from time import sleep
-
 from controllers.operator import OperatorController
 from controllers.pilot import PilotController
 
@@ -66,25 +63,17 @@ class RobotContainer:
         if c1Connected:
             self.configureSwerveButtonBindings()
         else:
-
-            def checkC1Connection():
-                while not self.pilotController.isConnected():
-                    sleep(1)
-                self.configureSwerveButtonBindings()
-
-            Thread(target=checkC1Connection).start()
+            self.pilotController.onceConnected(self.configureSwerveButtonBindings)
         if c2Connected:
             self.configureGeneralButtonBindings()
             self.configureArmButtonBindings()
         else:
 
-            def checkC2Connection():
-                while not self.operatorController.isConnected():
-                    sleep(1)
+            def onConnected():
                 self.configureGeneralButtonBindings()
                 self.configureArmButtonBindings()
 
-            Thread(target=checkC2Connection).start()
+            self.operatorController.onceConnected(onConnected)
 
     def configureGeneralButtonBindings(self) -> None:
         self.operatorController.getConeSelected().onTrue(
