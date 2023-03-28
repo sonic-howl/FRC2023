@@ -308,3 +308,7 @@ class SwerveConstants:
 
     # Minimum area that the april tag must take up in the limelight. Used to auto calibrate pose
     minimumAprilTagArea = 0.5
+
+class LimelightConstants:
+    apriltagPipelineID = 0
+    reflectiveTapePipelineID = 1

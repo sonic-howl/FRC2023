@@ -3,7 +3,6 @@ from commands.Claw.MoveClawCommand import MoveClawCommand
 from controllers.operator import OperatorController
 from controllers.pilot import PilotController
 
-from photonvision import PhotonCamera
 from commands.Auto.SwerveAutoCommand import SwerveAutoCommand
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 from wpimath.trajectory import (
@@ -25,6 +24,7 @@ from commands2 import (
 from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 from commands.SwerveCommand import SwerveCommand
 from constants import ArmConstants, Constants, SwerveConstants
+from commands.VisionTrackCommand import VisionTrackCommand
 
 
 class RobotContainer:
@@ -35,8 +35,6 @@ class RobotContainer:
     operatorController = OperatorController()
 
     field_oriented = True
-
-    photon_camera = PhotonCamera("photonvision")
 
     selectedGamePiece = ArmConstants.GamePieceType.kEmpty
 
@@ -57,12 +55,6 @@ class RobotContainer:
 
     def get_angle(self):
         return self.swerveSubsystem.getAngle()
-
-    def vision_track(self):
-        if self.photon_camera.hasTargets():
-            target = self.photon_camera.getLatestResult().getBestTarget()
-            transform_to_target = target.getBestCameraToTarget()
-            # TODO
 
     # def robotPeriodic(self):
     #     self.light_strip.update()
@@ -134,6 +126,12 @@ class RobotContainer:
             )
             self.pilotController.resetGyroBtn().onTrue(
                 InstantCommand(self.swerveSubsystem.resetGyro)
+            )
+    
+    def configureVisionTackBindings(self) -> None:
+        if self.pilotController.isConnected():
+            self.pilotController.visionTrackBtn().whileTrue(
+                VisionTrackCommand(self.swerveSubsystem)
             )
 
     def getAutonomousCommand(self):

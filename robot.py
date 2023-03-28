@@ -5,7 +5,7 @@ from ntcore import NetworkTableInstance
 
 from RobotContainer import RobotContainer
 from utils.utils import printAsync
-from constants import Constants
+from constants import Constants, LimelightConstants
 
 
 class Robot(wp.TimedRobot):
@@ -20,6 +20,11 @@ class Robot(wp.TimedRobot):
         self.smartDashboard = ntInstance.getTable("SmartDashboard")
         self.gyro_topic = self.smartDashboard.getDoubleTopic("Gyro Angle").publish()
         self.turner_topic = self.smartDashboard.getDoubleTopic("Turn Encoder").publish()
+        self.limelightTable = ntInstance.getTable("limelight")
+        
+        # Set the initial pipeline to apriltagDetection
+        self.limelightTable.getEntry("pipeline").setInteger(LimelightConstants.apriltagPipelineID)
+
         # # create ps4 controller
         # self.controller = wp.PS4Controller(0)
 
