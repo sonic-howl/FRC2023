@@ -25,6 +25,9 @@ class PickupCommand(Command):
         return {self.pickup}
 
     def execute(self) -> None:
+        if not self.controller.isConnected():
+            return
+
         # read axes and set speed depending on the game piece selected.
         # if the limit switch is hit while the cube is selected, stop motion
         relSpeed = self.controller.getPickupReleaseSpeed()

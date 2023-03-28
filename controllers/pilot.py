@@ -15,6 +15,7 @@ class PilotController:
         def checkConnection():
             while not self.isConnected():
                 sleep(checkInterval)
+            print("Pilot controller connected!")
             cb()
 
         Thread(target=checkConnection).start()

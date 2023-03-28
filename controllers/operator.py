@@ -16,6 +16,7 @@ class OperatorController:
         def checkConnection():
             while not self.isConnected():
                 sleep(checkInterval)
+            print("Operator controller connected!")
             cb()
 
         Thread(target=checkConnection).start()
