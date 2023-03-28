@@ -39,12 +39,13 @@ class Constants:
     navxPort = NavXPort.kUSB
 
 
-class ArmConstants:
-    class GamePieceType(Enum):
-        kCone = 0
-        kCube = 1
-        kEmpty = 2
+class GamePieceType(Enum):
+    kCone = 0
+    kCube = 1
+    kEmpty = 2
 
+
+class ArmConstants:
     class AngleType(Enum):
         kStow = 0
         kFloor = 1
@@ -154,6 +155,7 @@ class ArmConstants:
 
     class Arm:
         motorType = rev.CANSparkMax.MotorType.kBrushed
+        currentLimit = 40  # amps
 
         initialPosition = 0.0  # degrees
         angleTolerance = 4.0  # degrees
@@ -182,10 +184,11 @@ class ArmConstants:
 
         class Manual:
             maxAnglePerSecond = 10  # degrees per second
-            omegaScale = 5
+            omegaScale = 1
 
     class Claw:
         motorType = rev.CANSparkMax.MotorType.kBrushless
+        currentLimit = 20  # amps
 
         initialPosition = 180.0  # degrees
         angleTolerance = 4.0  # degrees
@@ -215,7 +218,7 @@ class ArmConstants:
 
         class Manual:
             maxAnglePerSecond = 10  # degrees per second
-            omegaScale = 5
+            omegaScale = 1
 
 
 class SwerveConstants:

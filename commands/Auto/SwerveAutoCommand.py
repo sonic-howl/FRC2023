@@ -6,7 +6,7 @@ from commands2 import Command, Subsystem
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 from utils.utils import printAsync
 
-from constants import ArmConstants, Constants, SwerveConstants
+from constants import ArmConstants, Constants, GamePieceType, SwerveConstants
 from pathplannerlib import PathPlannerTrajectory
 
 # from pathplannerlib._pathplannerlib.controllers import PPHolonomicDriveController
@@ -68,7 +68,7 @@ class SwerveAutoCommand(Command):
 
         self.traverser.on_stop(handle_stop)
         self.traverser.on(
-            f"{ArmConstants.GamePieceType.kCone.name}/{ArmConstants.AngleType.kStow.name}",
+            f"{GamePieceType.kCone.name}/{ArmConstants.AngleType.kStow.name}",
             StowCommand(self.armAssemblySubsystem),
         )
 

@@ -81,8 +81,8 @@ class Robot(wp.TimedRobot):
     # def autonomousPeriodic(self) -> None:
     #     self.robot_container.autonomousPeriodic()
 
-    def teleopInit(self) -> None:
-        self.robotContainer.setupArmTeleopInit()
+    # def teleopInit(self) -> None:
+    #     self.robotContainer.teleopInit()
 
     # def teleopPeriodic(self) -> None:
     #     self.robot_container.teleopPeriodic()

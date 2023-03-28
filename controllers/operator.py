@@ -1,5 +1,6 @@
 from commands2.button import CommandXboxController
 from constants import Constants
+from utils.utils import dz
 
 
 class OperatorController:
@@ -9,50 +10,44 @@ class OperatorController:
         return self._controller.isConnected()
 
     def getTopGrid(self):
-        return self._controller.getYButton()
+        return self._controller.Y()
 
     def getMiddleGrid(self):
-        return self._controller.getBButton()
+        return self._controller.B()
 
     def getBottomGrid(self):
-        return self._controller.getAButton()
+        return self._controller.A()
 
-    def getFloorPickupCube(self):
-        return self._controller.getPOV() == 270  # left d-pad
-
-    def getFloorPickupCone(self):
-        return self._controller.getPOV() == 90  # right d-pad
+    def getFloorPickup(self):
+        return self._controller.POVDown()
 
     def getStowClaw(self):
-        return self._controller.getPOV() == 0  # up d-pad
+        return self._controller.POVLeft()
 
-    # def getClawX(self):
-    #     """
-    #     Returns the X axis of the right joystick.
-    #     This will control the position of the arm/claw in the X direction (forward).
-    #     """
-    #     return self._controller.getLeftTriggerAxis()
+    def getUpperFeedStation(self):
+        return self._controller.POVUp()
 
-    # def getClawY(self):
-    #     """
-    #     Returns the Y axis of the right joystick.
-    #     This will control the position of the arm/claw in the Y direction (up and down).
-    #     """
-    #     return self._controller.getRightTriggerAxis()
+    def getConeSelected(self):
+        return self._controller.leftBumper()
+
+    def getCubeSelected(self):
+        return self._controller.rightBumper()
+
+    def getEmptySelected(self):
+        # return self._controller.leftBumper().and_(self._controller.rightBumper()) # TODO try this
+        return self._controller.POVRight()
 
     def getClawRotation(self):
-        """
-        Returns the left Y axis value.
-        This will control the rotation of the claw.
-        """
-        return -self._controller.getLeftY()
+        return dz(self._controller.getLeftY())
 
     def getArmRotation(self):
-        """
-        Returns the right Y axis value.
-        This will control the rotation of the claw.
-        """
-        return -self._controller.getRightY()
+        return -dz(self._controller.getRightY())
 
     def getZeroEncoderPosition(self):
-        return self._controller.B()
+        return self._controller.X()
+
+    def getPickupIntakeSpeed(self):
+        return self._controller.getRightTriggerAxis()
+
+    def getPickupReleaseSpeed(self):
+        return -self._controller.getLeftTriggerAxis()

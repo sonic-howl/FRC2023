@@ -1,20 +1,30 @@
-import math
-from typing import Type
-import rev
-
-from wpimath.controller import ArmFeedforward
 from commands2 import SubsystemBase
 
-from constants import ArmConstants, Constants
+from constants import ArmConstants
+from controllers.operator import OperatorController
 from .ArmSubsystem import ArmSubsystem
 
 
 class ArmAssemblySubsystem(SubsystemBase):
-    def __init__(self) -> None:
+    def __init__(self, operatorController: OperatorController) -> None:
         super().__init__()
+
+        self.operatorController = operatorController
 
         self.arm = ArmSubsystem(ArmConstants.Arm)
         self.claw = ArmSubsystem(ArmConstants.Claw)
+
+    def periodic(self) -> None:
+        if self.operatorController.isConnected():
+            # if there is manual control, cancel the current command to run the default command
+            if (
+                self.operatorController.getArmRotation() != 0
+                or self.operatorController.getClawRotation() != 0
+            ):
+                # let manual control override the current command
+                currentCommand = self.getCurrentCommand()
+                if self.getDefaultCommand() != currentCommand:
+                    currentCommand.cancel()
 
     def getClawAngle(self):
         """Returns the angle of the claw"""

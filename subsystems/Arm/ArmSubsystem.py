@@ -23,6 +23,7 @@ class ArmSubsystem(SubsystemBase):
         self.armMotor.restoreFactoryDefaults()
         self.armMotor.setOpenLoopRampRate(0.5)
         self.armMotor.setIdleMode(rev.CANSparkMax.IdleMode.kBrake)
+        self.armMotor.setSmartCurrentLimit(constants.currentLimit)
 
         # soft limits
         # ! test this. It may be raw encoder units rather than degrees (scaled from encoder units)
