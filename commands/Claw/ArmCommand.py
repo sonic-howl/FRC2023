@@ -1,6 +1,8 @@
 import typing
+
 from commands2 import Command, Subsystem
-from constants import ArmConstants
+
+from constants.GameConstants import GamePieceType
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 
 
@@ -8,7 +10,7 @@ class ArmCommand(Command):
     def __init__(
         self,
         arm: ArmAssemblySubsystem,
-        gamePieceType=ArmConstants.GamePieceType.kEmpty,
+        gamePieceType=GamePieceType.kEmpty,
     ) -> None:
         super().__init__()
         self.arm = arm

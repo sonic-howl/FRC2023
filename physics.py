@@ -1,7 +1,9 @@
-from pyfrc.physics.core import PhysicsEngine as Engine, PhysicsInterface
+from typing import TYPE_CHECKING
+
+from pyfrc.physics.core import PhysicsEngine as Engine
+from pyfrc.physics.core import PhysicsInterface
 from wpilib.simulation import AnalogGyroSim
 from wpimath.geometry import Pose2d, Rotation2d
-from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from robot import Robot

@@ -1,12 +1,26 @@
+from threading import Thread
+from time import sleep
+from typing import Callable
+
 from commands2.button import CommandXboxController
-from constants import Constants
+
+from constants.RobotConstants import RobotConstants
 
 
 class PilotController:
-    _controller = CommandXboxController(Constants.pilot_controller_id)
+    _controller = CommandXboxController(RobotConstants.pilot_controller_id)
 
     def isConnected(self):
         return self._controller.isConnected()
+
+    def onceConnected(self, cb: Callable[[], None], checkInterval=1):
+        def checkConnection():
+            while not self.isConnected():
+                sleep(checkInterval)
+            print("Pilot controller connected!")
+            cb()
+
+        Thread(target=checkConnection).start()
 
     # reversing x and y controller -> field axes. x is forwards, y is strafe.
     def getForward(self):

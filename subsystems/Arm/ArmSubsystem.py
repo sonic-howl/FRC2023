@@ -1,13 +1,13 @@
-from typing import Type
 import math
-
-import wpilib
+from typing import Type
 
 import rev
+import wpilib
 from commands2 import SubsystemBase
 from wpimath.controller import ArmFeedforward
 
-from constants import ArmConstants, Constants
+from constants.ArmConstants import ArmConstants
+from constants.RobotConstants import RobotConstants
 
 
 class ArmSubsystem(SubsystemBase):
@@ -23,6 +23,7 @@ class ArmSubsystem(SubsystemBase):
         self.armMotor.restoreFactoryDefaults()
         self.armMotor.setOpenLoopRampRate(0.5)
         self.armMotor.setIdleMode(rev.CANSparkMax.IdleMode.kBrake)
+        self.armMotor.setSmartCurrentLimit(constants.currentLimit)
 
         # soft limits
         # ! test this. It may be raw encoder units rather than degrees (scaled from encoder units)
@@ -40,7 +41,7 @@ class ArmSubsystem(SubsystemBase):
         # PID setup (not used)
         # ? or maybe it's used by Smart Motion?
         self.armPID = self.armMotor.getPIDController()
-        self.armPID.setOutputRange(-Constants.maxSpeed, Constants.maxSpeed)
+        self.armPID.setOutputRange(-RobotConstants.maxSpeed, RobotConstants.maxSpeed)
         self.armPID.setP(constants.kP)
         self.armPID.setI(constants.kI)
         self.armPID.setD(constants.kD)
@@ -60,10 +61,12 @@ class ArmSubsystem(SubsystemBase):
         self.armEncoder = self.armMotor.getEncoder(
             *constants.getEncoderArgs
         )  # when brushed with data port encoder wire: rev.SparkMaxRelativeEncoder.Type.kQuadrature, 1024
-        self.armEncoder.setPositionConversionFactor(constants.kConversionFactor)
+        self.armEncoder.setPositionConversionFactor(constants.kConversionFactorToDeg)
         self.armEncoder.setVelocityConversionFactor(
-            constants.kConversionFactor
-            * (math.tau / 60)  # converting from RPM to radians per second
+            math.radians(
+                constants.kConversionFactorToDeg
+                * (math.tau / 60)  # converting from RPM to degrees per second
+            )  # to radians per second
         )
         self.armEncoder.setPosition(self.initialPosition)
 

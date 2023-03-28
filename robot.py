@@ -1,19 +1,19 @@
-from ArmAnglesConfigurator import configureArmAnglePreferences
-from commands2 import CommandScheduler
 import wpilib as wp
+from commands2 import CommandScheduler
 from ntcore import NetworkTableInstance
 
+from ArmAnglesConfigurator import configureArmAnglePreferences
+from constants.RobotConstants import RobotConstants
 from RobotContainer import RobotContainer
 from utils.utils import printAsync
-from constants import Constants
 
 
 class Robot(wp.TimedRobot):
-    def __init__(self, period=Constants.period) -> None:
+    def __init__(self, period=RobotConstants.period) -> None:
         super().__init__(period)
 
     def robotInit(self) -> None:
-        Constants.isSimulation = self.isSimulation()
+        RobotConstants.isSimulation = self.isSimulation()
 
         # self.smartDashboard = NetworkTables.getTable("SmartDashboard")
         ntInstance = NetworkTableInstance.getDefault()
@@ -81,8 +81,8 @@ class Robot(wp.TimedRobot):
     # def autonomousPeriodic(self) -> None:
     #     self.robot_container.autonomousPeriodic()
 
-    def teleopInit(self) -> None:
-        self.robotContainer.setupArmTeleopInit()
+    # def teleopInit(self) -> None:
+    #     self.robotContainer.teleopInit()
 
     # def teleopPeriodic(self) -> None:
     #     self.robot_container.teleopPeriodic()

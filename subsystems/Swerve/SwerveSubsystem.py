@@ -3,20 +3,21 @@ from time import sleep
 from typing import Tuple
 
 import wpilib
-from ntcore import NetworkTableInstance
+from commands2 import SubsystemBase
+from navx import AHRS
+from wpilib import Field2d, SmartDashboard
+from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import (
     ChassisSpeeds,
-    SwerveModuleState,
+    SwerveDrive4Kinematics,
     SwerveDrive4Odometry,
+    SwerveModuleState,
 )
-from wpimath.geometry import Rotation2d, Pose2d
-from wpimath.kinematics import SwerveDrive4Kinematics
-from wpilib import SPI, Field2d, SmartDashboard
-from navx import AHRS
-from commands2 import SubsystemBase
+
+from constants.RobotConstants import RobotConstants
+from constants.SwerveConstants import SwerveConstants
 
 from .SwerveModule import SwerveModule
-from constants import SwerveConstants, Constants
 
 
 class SwerveSubsystem(SubsystemBase):
@@ -54,12 +55,12 @@ class SwerveSubsystem(SubsystemBase):
         AHRS(
             wpilib.SerialPort.Port.kUSB,
             AHRS.SerialDataType.kProcessedData,
-            int(1 / Constants.period),
+            int(1 / RobotConstants.period),
         )
-        if Constants.navxPort == Constants.NavXPort.kUSB
+        if RobotConstants.navxPort == RobotConstants.NavXPort.kUSB
         else AHRS(
             wpilib.SPI.Port.kMXP,
-            int(1 / Constants.period),
+            int(1 / RobotConstants.period),
         )
     )
 
@@ -84,14 +85,14 @@ class SwerveSubsystem(SubsystemBase):
 
         Thread(target=resetGyro).start()
 
-        if not Constants.isSimulation:
+        if not RobotConstants.isSimulation:
             self.field = Field2d()
             SmartDashboard.putData("Field", self.field)
 
     def getAngle(self) -> float:
         # return self.gyro.getAngle() % 360
         # return self.gyro.getFusedHeading()
-        if Constants.isSimulation:
+        if RobotConstants.isSimulation:
             from physics import PhysicsEngine
 
             return PhysicsEngine.simGyro.getAngle()
@@ -127,7 +128,7 @@ class SwerveSubsystem(SubsystemBase):
     def periodic(self) -> None:
         # TODO print gyro angle, robot pose on dashboard
 
-        if not Constants.isSimulation:
+        if not RobotConstants.isSimulation:
             self.field.setRobotPose(self.getPose())
 
         self.odometer.update(
@@ -144,7 +145,7 @@ class SwerveSubsystem(SubsystemBase):
         self.back_left.stop()
         self.back_right.stop()
 
-        if Constants.isSimulation:
+        if RobotConstants.isSimulation:
             self.simChassisSpeeds = None
 
     def setX(self) -> None:
@@ -171,15 +172,15 @@ class SwerveSubsystem(SubsystemBase):
         """
 
         robotPoseVel = Pose2d(
-            chassisSpeeds.vx * Constants.period,
-            chassisSpeeds.vy * Constants.period,
-            Rotation2d(chassisSpeeds.omega * Constants.period),
+            chassisSpeeds.vx * RobotConstants.period,
+            chassisSpeeds.vy * RobotConstants.period,
+            Rotation2d(chassisSpeeds.omega * RobotConstants.period),
         )
         twistVel = Pose2d().log(robotPoseVel)
         updatedChassisSpeeds = ChassisSpeeds(
-            twistVel.dx / Constants.period,
-            twistVel.dy / Constants.period,
-            twistVel.dtheta / Constants.period,
+            twistVel.dx / RobotConstants.period,
+            twistVel.dy / RobotConstants.period,
+            twistVel.dtheta / RobotConstants.period,
         )
 
         return SwerveConstants.kDriveKinematics.toSwerveModuleStates(
