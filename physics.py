@@ -29,11 +29,11 @@ class PhysicsEngine(Engine):
             )
             swerveSubsystem.swerveAutoStartPose = None
 
-        if swerveSubsystem.simChassisSpeeds:
+        if swerveSubsystem.currentChassisSpeeds:
             # the simulation turning is very slow, speed it up
-            swerveSubsystem.simChassisSpeeds.omega *= 20
+            swerveSubsystem.currentChassisSpeeds.omega *= 20
             pose = self.physics_controller.drive(
-                swerveSubsystem.simChassisSpeeds, tm_diff
+                swerveSubsystem.currentChassisSpeeds, tm_diff
             )
 
             self.physics_controller.field.setRobotPose(pose)

@@ -88,6 +88,7 @@ class Robot(wp.TimedRobot):
 
     def teleopInit(self) -> None:
         self.robotContainer.setupArmTeleopInit()
+        self.robotContainer.configureVisionTrackBindings()
 
     # def teleopPeriodic(self) -> None:
     #     self.robot_container.teleopPeriodic()

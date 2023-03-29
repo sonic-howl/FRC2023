@@ -128,7 +128,7 @@ class RobotContainer:
                 InstantCommand(self.swerveSubsystem.resetGyro)
             )
     
-    def configureVisionTackBindings(self) -> None:
+    def configureVisionTrackBindings(self) -> None:
         if self.pilotController.isConnected():
             self.pilotController.visionTrackBtn().whileTrue(
                 VisionTrackCommand(self.swerveSubsystem)

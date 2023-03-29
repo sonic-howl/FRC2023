@@ -36,15 +36,12 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/LiveWindow/Ungrouped/class frc2::SubsystemBase": "Subsystem",
+      "/LiveWindow/Ungrouped/navX-Sensor[2]": "Gyro",
       "/SmartDashboard/Arm Sim": "Mechanism2d",
       "/SmartDashboard/Field": "Field2d"
     },
     "windows": {
-      "/SmartDashboard/Arm Sim": {
-        "window": {
-          "visible": true
-        }
-      },
       "/SmartDashboard/Field": {
         "window": {
           "visible": true
@@ -61,9 +58,6 @@
     },
     "transitory": {
       "SmartDashboard": {
-        "Field": {
-          "open": true
-        },
         "open": true
       }
     }

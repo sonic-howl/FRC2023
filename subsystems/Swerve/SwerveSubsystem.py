@@ -21,7 +21,7 @@ from constants import SwerveConstants, Constants
 
 
 class SwerveSubsystem(SubsystemBase):
-    simChassisSpeeds: ChassisSpeeds | None = None
+    currentChassisSpeeds: ChassisSpeeds | None = None
     """Meant for simulation only"""
     swerveAutoStartPose: Pose2d | None = None
     """Meant for simulation only"""
@@ -83,6 +83,7 @@ class SwerveSubsystem(SubsystemBase):
             ),
             Pose2d()
         )
+        
 
 
         def resetGyro():
@@ -142,8 +143,9 @@ class SwerveSubsystem(SubsystemBase):
 
         # Correct for pose when an april tag is in view of the limelight at a certain distance
         if self.tv.get() and self.ta.get() > SwerveConstants.minimumAprilTagArea:
+            robotPose = self.limelightTable.getDoubleArrayTopic('botpose')
             self.odometer.addVisionMeasurement(
-                self.limelightTable.getDoubleArrayTopic('botpose'),
+                Pose2d(robotPose[0],robotPose[1],robotPose[2]),
                 self.limelightTable.getFloatTopic('ts') / 1000 # Outputs milliseconds, requiers seconds
             )
             # Debug
@@ -166,7 +168,7 @@ class SwerveSubsystem(SubsystemBase):
         self.back_right.stop()
 
         if Constants.isSimulation:
-            self.simChassisSpeeds = None
+            self.currentChassisSpeeds = None
 
     def setX(self) -> None:
         self.front_left.setDesiredState(

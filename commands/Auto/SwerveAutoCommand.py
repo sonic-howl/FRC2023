@@ -125,7 +125,7 @@ class SwerveAutoCommand(Command):
         #         )
 
         if Constants.isSimulation:
-            self.swerveSubsystem.simChassisSpeeds = chassisSpeeds
+            self.swerveSubsystem.currentChassisSpeeds = chassisSpeeds
 
         swerveModuleStates = SwerveSubsystem.toSwerveModuleStatesForecast(chassisSpeeds)
 
