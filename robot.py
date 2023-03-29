@@ -43,14 +43,15 @@ class Robot(wp.TimedRobot):
     lastArmPos = 0.0
 
     def robotPeriodic(self) -> None:
-        armPos = self.robotContainer.armAssemblySubsystem.arm.armEncoder.getPosition()
-        if armPos != self.lastArmPos:
-            print(
-                "current arm pos:",
-                armPos,
-            )
-            # self.robot_container.robotPeriodic()
-        self.lastArmPos = armPos
+        # arm angle calibration
+        # armPos = self.robotContainer.armAssemblySubsystem.arm.armEncoder.getPosition()
+        # if armPos != self.lastArmPos:
+        #     print(
+        #         "current arm pos:",
+        #         armPos,
+        #     )
+        #     # self.robot_container.robotPeriodic()
+        # self.lastArmPos = armPos
 
         self.gyro_topic.set(self.robotContainer.get_angle())
 

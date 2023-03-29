@@ -22,13 +22,28 @@ class ArmAssemblySubsystem(SubsystemBase):
             or self.operatorController.getClawRotation() != 0
         )
 
+    lastArmPos = 0
+    lastClawPos = 0
+
     def periodic(self) -> None:
         # if there is manual control, cancel the current command to run the default command
-        if self.isManuallyControlled():
-            # let manual control override the current command
-            currentCommand = self.getCurrentCommand()
-            if self.getDefaultCommand() != currentCommand:
-                currentCommand.cancel()
+        # if self.isManuallyControlled():
+        #     # let manual control override the current command
+        #     currentCommand = self.getCurrentCommand()
+        #     if self.getDefaultCommand() != currentCommand:
+        #         currentCommand.cancel()
+
+        armPos = self.arm.getAngle()
+        clawPos = self.claw.getAngle()
+        if armPos != self.lastArmPos:
+            print("Arm angle:", armPos)
+        if clawPos != self.lastClawPos:
+            print("Claw angle:", clawPos)
+
+        self.lastArmPos = armPos
+        self.lastClawPos = clawPos
+
+        pass
 
     def getClawAngle(self):
         """Returns the angle of the claw"""
@@ -58,9 +73,10 @@ class ArmAssemblySubsystem(SubsystemBase):
         Down=0
         Back=270
         """
-        self.arm.setAngle(worldArmAngle)
+        # self.arm.setAngle(worldArmAngle)
         # these are subtracted to get the actual ending angle for the claw to be set to.
-        self.claw.setAngle(worldClawAngle - worldArmAngle)
+        # self.claw.setAngle(worldClawAngle - worldArmAngle)
+        self.claw.setAngle(worldArmAngle)
 
     def atSetpoint(self):
         """Returns true if the arm and claw are at their setpoints"""

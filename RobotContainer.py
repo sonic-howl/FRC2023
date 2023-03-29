@@ -1,7 +1,9 @@
 from commands2 import InstantCommand
 from photonvision import PhotonCamera
+from wpilib.event import EventLoop
 
 from commands.Auto.SwerveAutoCommand import SwerveAutoCommand
+from commands.Claw.L2GridCommand import L2GridCommand
 from commands.Claw.MoveClawCommand import MoveClawCommand
 from commands.Pickup.PickupCommand import PickupCommand
 from commands.SwerveCommand import SwerveCommand
@@ -14,9 +16,6 @@ from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 
 
 class RobotContainer:
-    pilotController = PilotController()
-    operatorController = OperatorController()
-
     field_oriented = True
 
     photon_camera = PhotonCamera("photonvision")
@@ -24,6 +23,11 @@ class RobotContainer:
     selectedGamePiece = GamePieceType.kEmpty
 
     def __init__(self) -> None:
+        self.eventLoop = EventLoop()
+
+        self.pilotController = PilotController()
+        self.operatorController = OperatorController(self.eventLoop)
+
         self.swerveSubsystem = SwerveSubsystem()
         self.armAssemblySubsystem = ArmAssemblySubsystem(self.operatorController)
         self.pickup = PickupSubsystem(self.operatorController)
@@ -36,6 +40,10 @@ class RobotContainer:
 
         # self.light_strip = LightStrip(Constants.light_strip_pwm_port)
         # self.light_strip.setRainbowSlow()
+
+    def robotPeriodic(self):
+        self.eventLoop.poll()
+        # self.light_strip.update()
 
     @staticmethod
     def getSelectedGamePiece():
@@ -119,6 +127,9 @@ class RobotContainer:
     def configureArmButtonBindings(self) -> None:
         self.operatorController.getZeroEncoderPosition().onTrue(
             InstantCommand(self.armAssemblySubsystem.resetArm)
+        )
+        self.operatorController.getMiddleGrid().onTrue(
+            L2GridCommand(self.armAssemblySubsystem, GamePieceType.kCone)
         )
 
     def setupPickup(self):

@@ -40,8 +40,8 @@ class ArmConstants:
                 SubsystemType.kClaw: 90,
             },
             AngleType.kGridS2: {
-                SubsystemType.kArm: 80,
-                SubsystemType.kClaw: 90,
+                SubsystemType.kArm: 84,
+                SubsystemType.kClaw: 20,
             },
             AngleType.kGridS3: {
                 SubsystemType.kArm: 100,
@@ -116,14 +116,15 @@ class ArmConstants:
 
     class Arm:
         motorType = rev.CANSparkMax.MotorType.kBrushed
+        speedScale = 0.6
         currentLimit = 40  # amps
 
         initialPosition = 0.0  # degrees
         angleTolerance = 4.0  # degrees
-        encoderOffsetHack = 0.0  # degrees
+        encoderOffsetHack = 360.0  # degrees
 
         kCANId = 10
-        kConversionFactorToDeg = 0.5532  # TODO change
+        kConversionFactorToDeg = 27.6341
         kMaxVelocityRPM = 2000  # TODO calibrate
         kMaxAccelerationRPM = 1500  # TODO calibrate
 
@@ -149,16 +150,17 @@ class ArmConstants:
 
     class Claw:
         motorType = rev.CANSparkMax.MotorType.kBrushless
+        speedScale = 0.2
         currentLimit = 20  # amps
 
         initialPosition = 180.0  # degrees
         angleTolerance = 4.0  # degrees
         # Hack to stop the encoder from going below 0 and underflowing
-        encoderOffsetHack = 360.0  # degrees
+        encoderOffsetHack = 0.0  # degrees
 
         kCANId = 11
-        kConversionFactorToDeg = 10  # TODO change
-        kMaxVelocityRPM = 1000  # TODO calibrate
+        kConversionFactorToDeg = 2.99089
+        kMaxVelocityRPM = 1500  # TODO calibrate
         kMaxAccelerationRPM = 500  # TODO calibrate
 
         kForwardSoftLimit = 180  # degrees
@@ -166,7 +168,7 @@ class ArmConstants:
 
         getEncoderArgs = ()
 
-        kP = 0
+        kP = 0.05
         kI = 0
         kIz = 0
         kD = 0

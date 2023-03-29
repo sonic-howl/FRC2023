@@ -20,4 +20,5 @@ class ArmCommand(Command):
         return {self.arm}
 
     def isFinished(self) -> bool:
-        return self.arm.atSetpoint()
+        # return self.arm.atSetpoint()
+        return True

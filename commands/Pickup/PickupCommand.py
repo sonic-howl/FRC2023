@@ -43,7 +43,8 @@ class PickupCommand(Command):
 
         match self.getGamePieceSelected():
             case GamePieceType.kEmpty:
-                speed = 0
+                # speed = 0
+                pass
             case GamePieceType.kCube:
                 if (
                     self.pickup.isCubeLimitSwitchHit()
