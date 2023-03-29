@@ -21,6 +21,10 @@ class ArmCommand(Command):
 
     def getRequirements(self) -> typing.Set[Subsystem]:
         return {self.arm}
+    
+    def initialize(self) -> None:
+        self.arm.stopHoldArmPosition()
+        self.arm.stopHoldClawPosition()
 
     def execute(self) -> None:
         armAngle = ArmConstants.angles[self.getSelectedGamePiece()][self.angleType][
@@ -35,8 +39,9 @@ class ArmCommand(Command):
         self.arm.setArmAndClawAngle(armAngle, clawAngle)
 
     def end(self, interrupted: bool) -> None:
-        if interrupted:
-            self.arm.holdPositions()
+        self.arm.holdArmPosition()
+        self.arm.holdClawPosition()
 
     def isFinished(self) -> bool:
-        return self.arm.atSetpoint()
+        # return self.arm.atSetpoint()
+        return False

@@ -60,8 +60,8 @@ class SwerveConstants:
     kDriveZLimit = 4
 
     kPRobotTurn = 1
-    kIRobotTurn = 0.8
-    kDRobotTurn = 0.01
+    kIRobotTurn = 0.1
+    kDRobotTurn = 0.005
 
     inches_to_meters = 39.37
 

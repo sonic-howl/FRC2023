@@ -171,4 +171,4 @@ class ArmSubsystem(SubsystemBase):
         """
         Holds the current position of the arm.
         """
-        self.setAngle(self.getAngle())
+        self.setAngle(self.lastSetAngle)

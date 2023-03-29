@@ -7,7 +7,7 @@ from wpilib import SendableChooser, SmartDashboard
 
 
 class PPAutonomousSelector:
-    _PPPath = f"{os.getcwd()}/deploy/pathplanner"
+    _PPPath = "/home/lvuser/py/deploy/pathplanner"
 
     def __init__(
         self,

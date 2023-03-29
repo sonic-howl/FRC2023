@@ -14,6 +14,10 @@ class ArmAssemblySubsystem(SubsystemBase):
         self.arm = ArmSubsystem(ArmConstants.Arm)
         self.claw = ArmSubsystem(ArmConstants.Claw)
 
+        
+        self._holdArmPosition = False
+        self._holdClawPosition = False
+
     def isManuallyControlled(self):
         # instead of imperatively checking if the operator controller is connected, there could be a method/property
         # on the default command get a callback to check if it is being manually controlled.
@@ -43,7 +47,12 @@ class ArmAssemblySubsystem(SubsystemBase):
         self.lastArmPos = armPos
         self.lastClawPos = clawPos
 
-        pass
+        if self._holdArmPosition:
+            self.holdArmPosition()
+
+            
+        if self._holdClawPosition:
+            self.holdClawPosition()
 
     def getClawAngle(self):
         """Returns the angle of the claw"""
@@ -65,7 +74,7 @@ class ArmAssemblySubsystem(SubsystemBase):
         """Sets the angle of the arm to the given angle"""
         self.arm.setAngle(angle)
 
-    def setArmAndClawAngle(self, worldArmAngle: float, worldClawAngle: float):
+    def setArmAndClawAngle(self, armAngle: float, clawAngle: float):
         """
         Sets the angle of the arm and claw to the given angles in space
         Up=180
@@ -73,10 +82,10 @@ class ArmAssemblySubsystem(SubsystemBase):
         Down=0
         Back=270
         """
-        # self.arm.setAngle(worldArmAngle)
+        self.arm.setAngle(armAngle)
         # these are subtracted to get the actual ending angle for the claw to be set to.
         # self.claw.setAngle(worldClawAngle - worldArmAngle)
-        self.claw.setAngle(worldArmAngle)
+        self.claw.setAngle(clawAngle)
 
     def atSetpoint(self):
         """Returns true if the arm and claw are at their setpoints"""
@@ -92,6 +101,20 @@ class ArmAssemblySubsystem(SubsystemBase):
         self.resetArm()
         self.resetClaw()
 
-    def holdPositions(self):
+    def stopHoldArmPosition(self):
+        self._holdArmPosition = False
+
+    def stopHoldClawPosition(self):
+        self._holdArmPosition = False
+
+    def setHoldArmPosition(self):
+        self._holdClawPosition = True
+
+    def setHoldClawPosition(self):
+        self._holdClawPosition = True
+
+    def holdArmPosition(self):
         self.arm.holdPosition()
+    
+    def holdClawPosition(self):
         self.claw.holdPosition()
