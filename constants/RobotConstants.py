@@ -7,7 +7,7 @@ class RobotConstants:
     scale_speed = 1
     rotationScale = 0.5
     rotationCurvature = 2.0
-    rotationDeadzone = 0.05
+    rotationDeadzone = 0.1
 
     isSimulation = False
 

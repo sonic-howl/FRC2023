@@ -1,3 +1,4 @@
+import math
 from threading import Thread
 from time import sleep
 from typing import Tuple
@@ -6,6 +7,11 @@ import wpilib
 from commands2 import SubsystemBase
 from navx import AHRS
 from wpilib import Field2d, SmartDashboard
+from wpimath.controller import (
+    HolonomicDriveController,
+    PIDController,
+    ProfiledPIDControllerRadians,
+)
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import (
     ChassisSpeeds,
@@ -13,6 +19,7 @@ from wpimath.kinematics import (
     SwerveDrive4Odometry,
     SwerveModuleState,
 )
+from wpimath.trajectory import TrapezoidProfileRadians
 
 from constants.RobotConstants import RobotConstants
 from constants.SwerveConstants import SwerveConstants
@@ -50,19 +57,6 @@ class SwerveSubsystem(SubsystemBase):
         chassis_angular_offset=SwerveConstants.br_chassis_angular_offset,
     )
 
-    gyro = (
-        AHRS(
-            wpilib.SerialPort.Port.kUSB,
-            AHRS.SerialDataType.kProcessedData,
-            int(1 / RobotConstants.period),
-        )
-        if RobotConstants.navxPort == RobotConstants.NavXPort.kUSB
-        else AHRS(
-            wpilib.SPI.Port.kMXP,
-            int(1 / RobotConstants.period),
-        )
-    )
-
     odometer = SwerveDrive4Odometry(
         SwerveConstants.kDriveKinematics,
         Rotation2d(),
@@ -77,12 +71,38 @@ class SwerveSubsystem(SubsystemBase):
     def __init__(self) -> None:
         super().__init__()
 
+        self.gyro = (
+            AHRS(
+                wpilib.SerialPort.Port.kUSB,
+                AHRS.SerialDataType.kProcessedData,
+                int(1 / RobotConstants.period),
+            )
+            if RobotConstants.navxPort == RobotConstants.NavXPort.kUSB
+            else AHRS(
+                wpilib.SPI.Port.kMXP,
+                int(1 / RobotConstants.period),
+            )
+        )
+
         def resetGyro():
             """reset gyro after it's calibration of 1s"""
             sleep(1)
             self.resetGyro()
 
         Thread(target=resetGyro).start()
+
+        self.theta_pid = ProfiledPIDControllerRadians(
+            SwerveConstants.kPRobotTurn,
+            SwerveConstants.kIRobotTurn,
+            SwerveConstants.kDRobotTurn,
+            TrapezoidProfileRadians.Constraints(
+                SwerveConstants.kDriveMaxTurnMetersPerSecond,
+                SwerveConstants.kDriveMaxTurnAccelerationMetersPerSecond,
+            ),
+            period=RobotConstants.period,
+        )
+        self.theta_pid.enableContinuousInput(0, math.tau)
+        self.theta_pid.setTolerance(math.radians(3))
 
         if not RobotConstants.isSimulation:
             self.field = Field2d()
