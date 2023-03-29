@@ -1,5 +1,6 @@
 import os
 from commands.Auto.PPAutonomousCommand import PPAutonomousCommand
+from constants.RobotConstants import RobotConstants
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 
@@ -7,8 +8,6 @@ from wpilib import SendableChooser, SmartDashboard
 
 
 class PPAutonomousSelector:
-    _PPPath = "/home/lvuser/py/deploy/pathplanner"
-
     def __init__(
         self,
         swerveSubsystem: SwerveSubsystem,
@@ -17,6 +16,10 @@ class PPAutonomousSelector:
         self.swerveSubsystem = swerveSubsystem
         self.armAssemblySubsystem = armAssemblySubsystem
 
+        # best variable name ever
+        self._PPPathsPath = "/home/lvuser/py/deploy/pathplanner" if not RobotConstants.isSimulation else f"{os.getcwd()}/deploy/pathplanner"
+
+
         self.chooser: SendableChooser | None = None
 
         self.makeChooser(self.readPathPlannerPaths())
@@ -24,7 +27,7 @@ class PPAutonomousSelector:
     def readPathPlannerPaths(self):
         # I don't care about optimizing this
         files: list[str] = []
-        for dirpath, dirnames, filenames in os.walk(self._PPPath):
+        for dirpath, dirnames, filenames in os.walk(self._PPPathsPath):
             files.extend(filenames)
             break
 
