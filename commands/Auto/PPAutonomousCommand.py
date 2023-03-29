@@ -12,7 +12,6 @@ from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.trajectory import TrapezoidProfileRadians
 
 from constants.ArmConstants import ArmConstants
-from constants.GameConstants import GamePieceType
 from constants.RobotConstants import RobotConstants
 from constants.SwerveConstants import SwerveConstants
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
@@ -22,11 +21,12 @@ from utils.utils import printAsync
 from commands.Auto.PathPlanner import PathTraverser
 
 
-class SwerveAutoCommand(Command):
+class PPAutonomousCommand(Command):
     def __init__(
         self,
         swerveSubsystem: SwerveSubsystem,
         armAssemblySubsystem: ArmAssemblySubsystem,
+        pathName: str,
     ) -> None:
         super().__init__()
 
@@ -54,7 +54,7 @@ class SwerveAutoCommand(Command):
         # self.traverser = PathTraverser("Forwards_1m")
         # self.traverser = PathTraverser("Spin_90")
         # self.traverser = PathTraverser("Forwards_1m Spin_90")
-        self.traverser = PathTraverser("FullPath")
+        self.traverser = PathTraverser(pathName)
 
         def handle_stop(stop_event: PathPlannerTrajectory.StopEvent) -> None:
             printAsync(

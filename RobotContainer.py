@@ -1,9 +1,10 @@
+from commands.Auto.PPAutoSelector import PPAutonomousSelector
 from commands.Claw.ArmCommand import ArmCommand
 from commands2 import InstantCommand
 from constants.ArmConstants import ArmConstants
 from photonvision import PhotonCamera
 
-from commands.Auto.SwerveAutoCommand import SwerveAutoCommand
+from commands.Auto.PPAutonomousCommand import PPAutonomousCommand
 from commands.Claw.MoveClawCommand import MoveClawCommand
 from commands.Pickup.PickupCommand import PickupCommand
 from commands.SwerveCommand import SwerveCommand
@@ -30,7 +31,7 @@ class RobotContainer:
         self.armAssemblySubsystem = ArmAssemblySubsystem(self.operatorController)
         self.pickup = PickupSubsystem(self.operatorController)
 
-        self.swerveAutoCommand = SwerveAutoCommand(
+        self.autoSelector = PPAutonomousSelector(
             self.swerveSubsystem, self.armAssemblySubsystem
         )
 
@@ -54,6 +55,9 @@ class RobotContainer:
 
     def get_angle(self):
         return self.swerveSubsystem.getAngle()
+
+    def getAutonomousCommand(self):
+        return self.autoSelector.getSelectedAutonomousCommand()
 
     def vision_track(self):
         if self.photon_camera.hasTargets():
