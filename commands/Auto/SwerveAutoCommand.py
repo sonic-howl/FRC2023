@@ -1,4 +1,5 @@
 import typing
+from commands.Claw.ArmCommand import ArmCommand
 
 from commands2 import Command, Subsystem
 from pathplannerlib import PathPlannerTrajectory
@@ -10,7 +11,6 @@ from wpimath.controller import (
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.trajectory import TrapezoidProfileRadians
 
-from commands.Claw.StowCommand import StowCommand
 from constants.ArmConstants import ArmConstants
 from constants.GameConstants import GamePieceType
 from constants.RobotConstants import RobotConstants
@@ -19,7 +19,7 @@ from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 from utils.utils import printAsync
 
-from .PathPlanner import PathTraverser
+from commands.Auto.PathPlanner import PathTraverser
 
 
 class SwerveAutoCommand(Command):
@@ -68,10 +68,19 @@ class SwerveAutoCommand(Command):
             )
 
         self.traverser.on_stop(handle_stop)
-        self.traverser.on(
-            f"{GamePieceType.kCone.name}/{ArmConstants.AngleType.kStow.name}",
-            StowCommand(self.armAssemblySubsystem),
-        )
+
+        # ! when planning a path in PathPlanner, make sure the events have
+        # ! the same convention as the Enums (ex: "kCone/kGridL2")
+        for gamePieceType, angleTypeDict in ArmConstants.angles.items():
+            for angleType in angleTypeDict.keys():
+                self.traverser.on(
+                    f"{gamePieceType.name}/{angleType.name}",
+                    ArmCommand(
+                        self.armAssemblySubsystem,
+                        lambda gamePieceType=gamePieceType: gamePieceType,
+                        angleType,
+                    ),
+                )
 
         self.finished = False
 
@@ -80,13 +89,14 @@ class SwerveAutoCommand(Command):
 
     def initialize(self) -> None:
         self.finished = False
-        self.swerveSubsystem.resetOdometer()
-        self.swerveSubsystem.resetGyro()
+        # self.swerveSubsystem.resetOdometer()
+        self.swerveSubsystem.resetGyro()  # may also be problematic
         self.traverser.reset()
 
         state = self.traverser.get_initial_state()
         self.swerveSubsystem.swerveAutoStartPose = state.pose
-        self.swerveSubsystem.resetOdometer(state.pose)  # may be problematic
+        # the robot's odometry should be initialized to the pose returned by the camera using AprilTags
+        # self.swerveSubsystem.resetOdometer(state.pose)  # may be problematic
         # self.move_to_state(state)
         # print_async(
         #     "SwerveAutoCommand initialized:",

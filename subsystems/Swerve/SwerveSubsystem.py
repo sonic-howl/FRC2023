@@ -16,8 +16,7 @@ from wpimath.kinematics import (
 
 from constants.RobotConstants import RobotConstants
 from constants.SwerveConstants import SwerveConstants
-
-from .SwerveModule import SwerveModule
+from subsystems.Swerve.SwerveModule import SwerveModule
 
 
 class SwerveSubsystem(SubsystemBase):

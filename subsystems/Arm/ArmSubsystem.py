@@ -153,9 +153,22 @@ class ArmSubsystem(SubsystemBase):
         """
         return abs(self.getAngle() - self.lastSetAngle) < self.angleTolerance
 
+    def setPosition(self, position: float):
+        """
+        Sets the position of the arm encoder in degrees.
+        :param position: The position to set the arm to in degrees.
+        """
+        self.armEncoder.setPosition(position)
+
     def addAngle(self, angle: float):
         """
         Adds an angle to the current angle of the arm in degrees.
         :param angle: The angle to add to the arm in degrees.
         """
         self.setAngle(self.getAngle() + angle)
+
+    def holdPosition(self):
+        """
+        Holds the current position of the arm.
+        """
+        self.setAngle(self.getAngle())

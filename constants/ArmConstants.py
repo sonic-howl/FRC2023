@@ -12,9 +12,9 @@ class ArmConstants:
         kFloor = 1
         kUpperFeedStation = 2
         # kLowerFeedStation = 3
-        kGridS1 = 4
-        kGridS2 = 5
-        kGridS3 = 6
+        kGridL1 = 4
+        kGridL2 = 5
+        kGridL3 = 6
 
     class SubsystemType(Enum):
         kArm = 0
@@ -25,33 +25,33 @@ class ArmConstants:
         GamePieceType.kCone: {
             AngleType.kStow: {
                 SubsystemType.kArm: 0,
-                SubsystemType.kClaw: 0,
+                SubsystemType.kClaw: 180,
             },
             AngleType.kFloor: {
-                SubsystemType.kArm: 45,
-                SubsystemType.kClaw: 90,
+                SubsystemType.kArm: 15,
+                SubsystemType.kClaw: 65,
             },
             AngleType.kUpperFeedStation: {
                 SubsystemType.kArm: 120,
-                SubsystemType.kClaw: 90,
+                SubsystemType.kClaw: 0,
             },
-            AngleType.kGridS1: {
-                SubsystemType.kArm: 60,
-                SubsystemType.kClaw: 90,
+            AngleType.kGridL1: {
+                SubsystemType.kArm: 20,
+                SubsystemType.kClaw: 57,
             },
-            AngleType.kGridS2: {
+            AngleType.kGridL2: {
                 SubsystemType.kArm: 84,
-                SubsystemType.kClaw: 20,
+                SubsystemType.kClaw: -10,  # ? unsure
             },
-            AngleType.kGridS3: {
-                SubsystemType.kArm: 100,
-                SubsystemType.kClaw: 100,
+            AngleType.kGridL3: {
+                SubsystemType.kArm: 97,
+                SubsystemType.kClaw: -2,
             },
         },
         GamePieceType.kCube: {
             AngleType.kStow: {
                 SubsystemType.kArm: 0,
-                SubsystemType.kClaw: 0,
+                SubsystemType.kClaw: 180,
             },
             AngleType.kFloor: {
                 SubsystemType.kArm: 45,
@@ -61,23 +61,24 @@ class ArmConstants:
                 SubsystemType.kArm: 120,
                 SubsystemType.kClaw: 90,
             },
-            AngleType.kGridS1: {
-                SubsystemType.kArm: 60,
-                SubsystemType.kClaw: 90,
+            AngleType.kGridL1: {
+                SubsystemType.kArm: 30,
+                SubsystemType.kClaw: 36,
             },
-            AngleType.kGridS2: {
-                SubsystemType.kArm: 80,
-                SubsystemType.kClaw: 90,
+            AngleType.kGridL2: {
+                SubsystemType.kArm: 74,
+                SubsystemType.kClaw: 20,
             },
-            AngleType.kGridS3: {
-                SubsystemType.kArm: 100,
-                SubsystemType.kClaw: 100,
+            AngleType.kGridL3: {
+                SubsystemType.kArm: 90,
+                SubsystemType.kClaw: -1,
             },
         },
+        # ! this is the same as kCube
         GamePieceType.kEmpty: {
             AngleType.kStow: {
                 SubsystemType.kArm: 0,
-                SubsystemType.kClaw: 0,
+                SubsystemType.kClaw: 180,
             },
             AngleType.kFloor: {
                 SubsystemType.kArm: 45,
@@ -87,22 +88,22 @@ class ArmConstants:
                 SubsystemType.kArm: 120,
                 SubsystemType.kClaw: 90,
             },
-            AngleType.kGridS1: {
-                SubsystemType.kArm: 60,
-                SubsystemType.kClaw: 90,
+            AngleType.kGridL1: {
+                SubsystemType.kArm: 30,
+                SubsystemType.kClaw: 36,
             },
-            AngleType.kGridS2: {
-                SubsystemType.kArm: 80,
-                SubsystemType.kClaw: 90,
+            AngleType.kGridL2: {
+                SubsystemType.kArm: 74,
+                SubsystemType.kClaw: 20,
             },
-            AngleType.kGridS3: {
-                SubsystemType.kArm: 100,
-                SubsystemType.kClaw: 100,
+            AngleType.kGridL3: {
+                SubsystemType.kArm: 90,
+                SubsystemType.kClaw: -1,
             },
         },
     }
 
-    usePreferences = True
+    usePreferences = False
     # ! this will override the values in angles
     if usePreferences:
         for gamePiece in angles:

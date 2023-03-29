@@ -87,3 +87,11 @@ class ArmAssemblySubsystem(SubsystemBase):
 
     def resetClaw(self):
         self.claw.setPosition(self.claw.initialPosition)
+
+    def resetArmAndClaw(self):
+        self.resetArm()
+        self.resetClaw()
+
+    def holdPositions(self):
+        self.arm.holdPosition()
+        self.claw.holdPosition()
