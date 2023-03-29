@@ -41,7 +41,7 @@ class VisionTrackCommand(Command):
         # Get robot's current pose
         robotPose = self.swerveSubsystem.odometer.getEstimatedPosition()
         # Get pose of target in robot space
-        self.targetPoseRobotSpaceArray = self.limelightTable.getEntry('t6t_rs').getDoubleArray([10,10,0])
+        self.targetPoseRobotSpaceArray = self.limelightTable.getEntry('t6t_rs').getDoubleArray([0,0,0])
 
         targetPoseRobotSpace = Pose2d(self.targetPoseRobotSpaceArray[0], self.targetPoseRobotSpaceArray[1], self.targetPoseRobotSpaceArray[2])
 
