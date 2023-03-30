@@ -1,6 +1,6 @@
 import typing
 
-from commands2 import Command, Subsystem
+from commands2 import CommandBase
 
 from constants.ArmConstants import ArmConstants
 from controllers.operator import OperatorController
@@ -10,7 +10,7 @@ if typing.TYPE_CHECKING:
     from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 
 
-class ManualMoveClawCommand(Command):
+class ManualMoveClawCommand(CommandBase):
     """Allows operator to move the arm and claw manually using controller axes."""
 
     def __init__(
@@ -18,8 +18,9 @@ class ManualMoveClawCommand(Command):
     ):
         super().__init__()
 
-        self.armAssembly = armAssembly
         self.controller = controller
+        self.armAssembly = armAssembly
+        self.addRequirements(self.armAssembly)
 
         self.lastArmAngle: float | None = None
         self.lastClawAngle: float | None = None
@@ -27,9 +28,6 @@ class ManualMoveClawCommand(Command):
     def initialize(self) -> None:
         self.lastArmAngle = None
         self.lastClawAngle = None
-
-    def getRequirements(self) -> typing.Set[Subsystem]:
-        return {self.armAssembly}
 
     def execute(self) -> None:
         if not self.controller.isConnected():

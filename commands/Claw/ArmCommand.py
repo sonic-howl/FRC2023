@@ -1,13 +1,13 @@
 import typing
 
-from commands2 import Command, Subsystem
+from commands2 import CommandBase
 from constants.ArmConstants import ArmConstants
 
 from constants.GameConstants import GamePieceType
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 
 
-class ArmCommand(Command):
+class ArmCommand(CommandBase):
     def __init__(
         self,
         armAssembly: ArmAssemblySubsystem,
@@ -16,11 +16,10 @@ class ArmCommand(Command):
     ) -> None:
         super().__init__()
         self.armAssembly = armAssembly
+        self.addRequirements(self.armAssembly)
+
         self.getSelectedGamePiece = getSelectedGamePiece
         self.angleType = angleType
-
-    def getRequirements(self) -> typing.Set[Subsystem]:
-        return {self.armAssembly}
 
     def initialize(self) -> None:
         self.armAssembly.arm.stopHoldingPosition()

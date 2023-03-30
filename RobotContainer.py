@@ -28,7 +28,7 @@ class RobotContainer:
 
         self.swerveSubsystem = SwerveSubsystem()
         self.armAssemblySubsystem = ArmAssemblySubsystem(self.operatorController)
-        self.pickup = PickupSubsystem(self.operatorController)
+        self.pickupSubsystem = PickupSubsystem(self.operatorController)
 
         self.autoSelector = PPAutonomousSelector(
             self.swerveSubsystem, self.armAssemblySubsystem
@@ -169,9 +169,9 @@ class RobotContainer:
         )
 
     def setupPickup(self):
-        self.pickup.setDefaultCommand(
+        self.pickupSubsystem.setDefaultCommand(
             PickupCommand(
-                self.pickup, self.operatorController, self.getSelectedGamePiece
+                self.pickupSubsystem, self.operatorController, self.getSelectedGamePiece
             )
         )
 

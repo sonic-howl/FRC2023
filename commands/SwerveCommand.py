@@ -1,7 +1,7 @@
 import math
-from typing import Callable, Set
+from typing import Callable
 
-from commands2 import Command, Subsystem
+from commands2 import CommandBase
 from wpimath.filter import SlewRateLimiter
 from wpimath.kinematics import ChassisSpeeds
 
@@ -12,7 +12,7 @@ from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 from utils.utils import calcAxisSpeedWithCurvatureAndDeadzone, dz
 
 
-class SwerveCommand(Command):
+class SwerveCommand(CommandBase):
     def __init__(
         self,
         swerveSubsystem: SwerveSubsystem,
@@ -32,8 +32,7 @@ class SwerveCommand(Command):
         # self.yLimiter = SlewRateLimiter(SwerveConstants.kDriveYLimit)
         self.zLimiter = SlewRateLimiter(SwerveConstants.kDriveZLimit)
 
-    def getRequirements(self) -> Set[Subsystem]:
-        return {self.swerveSubsystem}
+        self.addRequirements(swerveSubsystem)
 
     def initialize(self) -> None:
         print("SwerveCommand initialized")

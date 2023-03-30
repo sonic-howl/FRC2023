@@ -1,13 +1,13 @@
 import typing
 
-from commands2 import Command, Subsystem
+from commands2 import CommandBase, Subsystem
 
 from constants.GameConstants import GamePieceType
 from controllers.operator import OperatorController
 from subsystems.Pickup.PickupSubsystem import PickupSubsystem
 
 
-class PickupCommand(Command):
+class PickupCommand(CommandBase):
     def __init__(
         self,
         pickup: PickupSubsystem,
@@ -17,13 +17,13 @@ class PickupCommand(Command):
         super().__init__()
 
         self.controller = controller
+
         self.pickup = pickup
+        self.addRequirements(self.pickup)
+
         self.getGamePieceSelected = getGamePieceSelected
 
         self.stopPickupOnLimitSwitchWhileTriggerHeld = False
-
-    def getRequirements(self) -> typing.Set[Subsystem]:
-        return {self.pickup}
 
     def execute(self) -> None:
         if not self.controller.isConnected():
