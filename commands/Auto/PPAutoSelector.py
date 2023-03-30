@@ -1,5 +1,6 @@
 import os
 from commands.Auto.PPAutonomousCommand import PPAutonomousCommand
+from constants.RobotConstants import RobotConstants
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 
@@ -7,13 +8,16 @@ from wpilib import SendableChooser, SmartDashboard
 
 
 class PPAutonomousSelector:
-    _PPPath = "/home/lvuser/py/deploy/pathplanner"
-
     def __init__(
         self,
         swerveSubsystem: SwerveSubsystem,
         armAssemblySubsystem: ArmAssemblySubsystem,
     ):
+        self._PPPath = (
+            "/home/lvuser/py/deploy/pathplanner"
+            if not RobotConstants.isSimulation
+            else f"{os.getcwd()}/deploy/pathplanner"
+        )
         self.swerveSubsystem = swerveSubsystem
         self.armAssemblySubsystem = armAssemblySubsystem
 
