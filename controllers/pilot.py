@@ -47,3 +47,6 @@ class PilotController:
 
     def toggleLLVisionBtn(self):
         return self._controller.B()
+
+    def getTrackTargetBtn(self):
+        return self._controller.getAButton()

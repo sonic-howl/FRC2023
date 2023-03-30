@@ -7,7 +7,7 @@ import wpilib
 from commands2 import SubsystemBase
 from navx import AHRS
 from wpilib import Field2d, SmartDashboard
-from wpimath.controller import ProfiledPIDControllerRadians
+from wpimath.controller import PIDController, ProfiledPIDControllerRadians
 from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds, SwerveDrive4Kinematics, SwerveModuleState
@@ -98,7 +98,19 @@ class SwerveSubsystem(SubsystemBase):
 
         self.ll = LLTable.getInstance()
 
-        self.theta_pid = ProfiledPIDControllerRadians(
+        # self.xPID = PIDController(
+        #     SwerveConstants.kPDrive,
+        #     SwerveConstants.kIDrive,
+        #     SwerveConstants.kDDrive,
+        #     period=RobotConstants.period,
+        # )
+        # self.yPID = PIDController(
+        #     SwerveConstants.kPDrive,
+        #     SwerveConstants.kIDrive,
+        #     SwerveConstants.kDDrive,
+        #     period=RobotConstants.period,
+        # )
+        self.thetaPID = ProfiledPIDControllerRadians(
             SwerveConstants.kPRobotTurn,
             SwerveConstants.kIRobotTurn,
             SwerveConstants.kDRobotTurn,
@@ -108,8 +120,8 @@ class SwerveSubsystem(SubsystemBase):
             ),
             period=RobotConstants.period,
         )
-        self.theta_pid.enableContinuousInput(0, math.tau)
-        self.theta_pid.setTolerance(math.radians(3))
+        self.thetaPID.enableContinuousInput(0, math.tau)
+        self.thetaPID.setTolerance(math.radians(3))
 
         if not RobotConstants.isSimulation:
             self.field = Field2d()

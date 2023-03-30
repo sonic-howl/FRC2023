@@ -53,13 +53,16 @@ class SwerveConstants:
     # TODO calibrate
     kDriveMaxMetersPerSecond = 5.15
     kDriveMaxAccelerationMetersPerSecond = 3.0
-    kDriveMaxTurnMetersPerSecond = 8.0
-    kDriveMaxTurnAccelerationMetersPerSecond = 5
+    kDriveMaxTurnMetersPerSecond = 5.0
+    kDriveMaxTurnAccelerationMetersPerSecond = 3.0
     kDriveXLimit = 5
     kDriveYLimit = 5
     kDriveZLimit = 4
 
-    kPRobotTurn = 1
+    kPDrive = 0.5
+    kIDrive = 0
+    kDDrive = 0
+    kPRobotTurn = 0.8
     kIRobotTurn = 0.1
     kDRobotTurn = 0.005
 

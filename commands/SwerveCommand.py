@@ -2,6 +2,8 @@ import math
 from typing import Callable
 
 from commands2 import CommandBase
+from constants.VisionConstants import VisionConstants
+from subsystems.Swerve.LLTable import LLTable
 from wpimath.filter import SlewRateLimiter
 from wpimath.kinematics import ChassisSpeeds
 
@@ -32,6 +34,9 @@ class SwerveCommand(CommandBase):
         # self.yLimiter = SlewRateLimiter(SwerveConstants.kDriveYLimit)
         self.zLimiter = SlewRateLimiter(SwerveConstants.kDriveZLimit)
 
+        self.ll = LLTable.getInstance()
+        self.visionTriggered = False
+
         self.addRequirements(swerveSubsystem)
 
     def initialize(self) -> None:
@@ -52,7 +57,7 @@ class SwerveCommand(CommandBase):
         pov = self.controller.getRotateToAngle()
         if pov != -1:
             # TODO calibrate this PID controller
-            z = self.swerveSubsystem.theta_pid.calculate(
+            z = self.swerveSubsystem.thetaPID.calculate(
                 math.radians(self.swerveSubsystem.getAngle()),
                 math.radians(360 - pov),
             )
@@ -62,14 +67,35 @@ class SwerveCommand(CommandBase):
             # z = self.zLimiter.calculate(z)
             z = calcAxisSpeedWithCurvatureAndDeadzone(z) * RobotConstants.rotationScale
 
-        magnitude = abs(x) + abs(y) + abs(z)
-        if dz(magnitude) > 0:
+        # VISION TRACKING
+        # !
+        # TODO test this
+        # this tracks the target and strafes horizontally to the target.
+        # it does not rotate the robot to face the target. That's done by the POV above by the driver.
+        visionYMps = 0
+        if self.controller.getTrackTargetBtn():
+            if self.ll.getTv():
+                if not self.visionTriggered:
+                    VisionConstants.xyVisionPID.reset()
+                    self.visionTriggered = True
+
+                tx = self.ll.getTxScaled()
+                visionYMps += VisionConstants.xyVisionPID.calculate(tx, 0)
+        else:
+            self.visionTriggered = False
+
+        magnitude = abs(x) + abs(y) + abs(z) + abs(visionYMps)
+        if dz(magnitude, 0.05) > 0:
             # convert values to meters per second and apply rate limiters
             x *= SwerveConstants.kDriveMaxMetersPerSecond
             # x = self.xLimiter.calculate(x)
 
             y *= SwerveConstants.kDriveMaxMetersPerSecond
             # y = self.yLimiter.calculate(y)
+
+            # print("y:", y, "visionYMps:", visionYMps)
+            # y is up and down on the field. X is left and right from the camera's perspective.
+            y += visionYMps
 
             z = self.zLimiter.calculate(z)
 

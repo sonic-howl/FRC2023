@@ -39,6 +39,10 @@ class LLTable:
     def getTx(self):
         return self.tx.get()
 
+    def getTxScaled(self):
+        """Returns tx scaled on the interval [-1, 1]"""
+        return self.getTx() / 29.8
+
     def getTa(self):
         return self.ta.get()
 
