@@ -1,6 +1,8 @@
 import math
 from typing import Type
 
+from wpilib import SmartDashboard
+
 import rev
 import wpilib
 from commands2 import SubsystemBase
@@ -14,6 +16,9 @@ class ArmSubsystem(SubsystemBase):
     def __init__(self, constants: Type[ArmConstants.Arm | ArmConstants.Claw]) -> None:
         super().__init__()
 
+        self.name = constants.name
+        self.kMotorSpeedReversed = constants.kMotorSpeedReversed
+        self.kReverseLimitSwitchInvert = constants.kReverseLimitSwitchInvert
         self.encoderOffsetHack = constants.encoderOffsetHack
         self.initialPosition = constants.initialPosition + self.encoderOffsetHack
         self.angleTolerance = constants.angleTolerance
@@ -80,6 +85,12 @@ class ArmSubsystem(SubsystemBase):
             constants.kA,
         )
 
+        # limit switch setup
+        if not RobotConstants.isSimulation:
+            self.reverseLimitSwitch = wpilib.DigitalInput(
+                constants.kReverseLimitSwitchId
+            )
+
         # acceleration calculation
         self.timer = wpilib.Timer()
         self.timer.start()
@@ -108,6 +119,36 @@ class ArmSubsystem(SubsystemBase):
         #     and abs(self.armEncoder.getVelocity()) < velocityThresholdRad
         # ):
         #     self.armEncoder.setPosition(self.initialPosition)
+
+        # self.lastSetAngle = self.getAngle()
+        if not RobotConstants.isSimulation:
+            self.stopOnLimitSwitch()
+
+    def stopOnLimitSwitch(self):
+        limitSwitchPressed = self.reverseLimitSwitch.get()
+
+        if self.kReverseLimitSwitchInvert:
+            limitSwitchPressed = not limitSwitchPressed
+
+        # will show up in shuffleboard as green if the limit switch is pressed
+        # depending on whether it's normally open or normally closed
+        SmartDashboard.putBoolean(f"{self.name} Limit Hit", limitSwitchPressed)
+
+        motorSpeed = self.armMotor.get()
+        # the claw's speed is reversed.
+        if self.kMotorSpeedReversed:
+            motorSpeed = -motorSpeed
+        if motorSpeed < 0:
+            if limitSwitchPressed:
+                # reset encoder position
+                # TODO test this
+                # maybe position should only be reset manually
+                # this may mess with the angles we've calibrated
+                self.resetPosition()
+
+                # self.armMotor.stopMotor()
+                self.updateLastAngle()
+                self.holdPosition()
 
     def setAngle(self, angle: float):
         """
@@ -152,6 +193,12 @@ class ArmSubsystem(SubsystemBase):
         :return: True if the arm is at the setpoint, False otherwise.
         """
         return abs(self.getAngle() - self.lastSetAngle) < self.angleTolerance
+
+    def resetPosition(self):
+        """
+        Resets the position of the arm encoder it's initial position.
+        """
+        self.armEncoder.setPosition(self.initialPosition)
 
     def setPosition(self, position: float):
         """
