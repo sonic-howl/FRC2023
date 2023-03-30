@@ -3,9 +3,10 @@ from commands2 import CommandScheduler
 from ntcore import NetworkTableInstance
 
 from ArmAnglesConfigurator import configureArmAnglePreferences
-from constants.RobotConstants import RobotConstants
+from constants.RobotConstants import RobotConstants, LimitSwitchConstants
 from RobotContainer import RobotContainer
 from utils.utils import printAsync
+from wpilib import DigitalInput
 
 
 class Robot(wp.TimedRobot):
@@ -32,6 +33,9 @@ class Robot(wp.TimedRobot):
         self.robotContainer = RobotContainer()
 
         self.swerveAutoCommand = self.robotContainer.getAutonomousCommand()
+
+        self.armLimitSwitch = DigitalInput(LimitSwitchConstants.armLimitSwitchID)
+        self.clawLimitSwitch = DigitalInput(LimitSwitchConstants.clawLimitSwitchID)
 
         if wp.DriverStation.isFMSAttached():
             print("FMS is attached")
