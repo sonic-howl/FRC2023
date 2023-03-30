@@ -7,22 +7,16 @@ import wpilib
 from commands2 import SubsystemBase
 from navx import AHRS
 from wpilib import Field2d, SmartDashboard
-from wpimath.controller import (
-    HolonomicDriveController,
-    PIDController,
-    ProfiledPIDControllerRadians,
-)
+from wpimath.controller import ProfiledPIDControllerRadians
+from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.geometry import Pose2d, Rotation2d
-from wpimath.kinematics import (
-    ChassisSpeeds,
-    SwerveDrive4Kinematics,
-    SwerveDrive4Odometry,
-    SwerveModuleState,
-)
+from wpimath.kinematics import ChassisSpeeds, SwerveDrive4Kinematics, SwerveModuleState
 from wpimath.trajectory import TrapezoidProfileRadians
 
 from constants.RobotConstants import RobotConstants
 from constants.SwerveConstants import SwerveConstants
+from constants.VisionConstants import VisionConstants
+from subsystems.Swerve.LLTable import LLTable
 from subsystems.Swerve.SwerveModule import SwerveModule
 
 
@@ -57,17 +51,6 @@ class SwerveSubsystem(SubsystemBase):
         chassis_angular_offset=SwerveConstants.br_chassis_angular_offset,
     )
 
-    odometer = SwerveDrive4Odometry(
-        SwerveConstants.kDriveKinematics,
-        Rotation2d(),
-        (
-            front_left.getPosition(),
-            front_right.getPosition(),
-            back_left.getPosition(),
-            back_right.getPosition(),
-        ),
-    )
-
     def __init__(self) -> None:
         super().__init__()
 
@@ -90,6 +73,30 @@ class SwerveSubsystem(SubsystemBase):
             self.resetGyro()
 
         Thread(target=resetGyro).start()
+
+        # odometer = SwerveDrive4Odometry(
+        #     SwerveConstants.kDriveKinematics,
+        #     Rotation2d(),
+        #     (
+        #         front_left.getPosition(),
+        #         front_right.getPosition(),
+        #         back_left.getPosition(),
+        #         back_right.getPosition(),
+        #     ),
+        # )
+        self.odometer = SwerveDrive4PoseEstimator(
+            SwerveConstants.kDriveKinematics,
+            Rotation2d(),
+            (
+                self.front_left.getPosition(),
+                self.front_right.getPosition(),
+                self.back_left.getPosition(),
+                self.back_right.getPosition(),
+            ),
+            Pose2d(),
+        )
+
+        self.ll = LLTable.getInstance()
 
         self.theta_pid = ProfiledPIDControllerRadians(
             SwerveConstants.kPRobotTurn,
@@ -122,7 +129,7 @@ class SwerveSubsystem(SubsystemBase):
         return Rotation2d.fromDegrees(self.getAngle())
 
     def getPose(self) -> Pose2d:
-        return self.odometer.getPose()
+        return self.odometer.getEstimatedPosition()
 
     def resetGyro(self):
         # self.gyro.zeroYaw()
@@ -137,11 +144,13 @@ class SwerveSubsystem(SubsystemBase):
     def resetOdometer(self, pose: Pose2d = Pose2d()):
         self.odometer.resetPosition(
             self.getRotation2d(),
+            (
+                self.front_left.getPosition(),
+                self.front_right.getPosition(),
+                self.back_left.getPosition(),
+                self.back_right.getPosition(),
+            ),
             pose,
-            self.front_left.getPosition(),
-            self.front_right.getPosition(),
-            self.back_left.getPosition(),
-            self.back_right.getPosition(),
         )
 
     def periodic(self) -> None:
@@ -150,12 +159,19 @@ class SwerveSubsystem(SubsystemBase):
         if not RobotConstants.isSimulation:
             self.field.setRobotPose(self.getPose())
 
+        # Correct for pose when an april tag is in view of the limelight at a certain distance
+        if self.ll.getTv() and self.ll.getTa() > VisionConstants.minAprilTagArea:
+            pose, ts = self.ll.getPose2dAndVisionTs()
+            self.odometer.addVisionMeasurement(pose, ts)
+
         self.odometer.update(
             self.getRotation2d(),
-            self.front_left.getPosition(),
-            self.front_right.getPosition(),
-            self.back_left.getPosition(),
-            self.back_right.getPosition(),
+            (
+                self.front_left.getPosition(),
+                self.front_right.getPosition(),
+                self.back_left.getPosition(),
+                self.back_right.getPosition(),
+            ),
         )
 
     def stop(self) -> None:

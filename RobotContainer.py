@@ -12,13 +12,12 @@ from controllers.operator import OperatorController
 from controllers.pilot import PilotController
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 from subsystems.Pickup.PickupSubsystem import PickupSubsystem
+from subsystems.Swerve.LLTable import LLTable
 from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 
 
 class RobotContainer:
     field_oriented = True
-
-    photon_camera = PhotonCamera("photonvision")
 
     selectedGamePiece = GamePieceType.kEmpty
 
@@ -58,17 +57,12 @@ class RobotContainer:
     def getAutonomousCommand(self):
         return self.autoSelector.getSelectedAutonomousCommand()
 
-    def vision_track(self):
-        if self.photon_camera.hasTargets():
-            target = self.photon_camera.getLatestResult().getBestTarget()
-            transform_to_target = target.getBestCameraToTarget()
-            # TODO
-
     def configureButtonBindings(self) -> None:
         c1Connected = self.pilotController.isConnected()
         c2Connected = self.operatorController.isConnected()
         if c1Connected:
             self.setupSwerve()
+            self.configureGeneralPilotButtonBindings()
         else:
             self.pilotController.onceConnected(self.setupSwerve)
         if c2Connected:
@@ -83,6 +77,12 @@ class RobotContainer:
                 self.configureGeneralOperatorButtonBindings()
 
             self.operatorController.onceConnected(onConnected)
+
+    def configureGeneralPilotButtonBindings(self) -> None:
+        ll = LLTable.getInstance()
+        self.pilotController.toggleLLVisionBtn().onTrue(
+            InstantCommand(ll.toggleCamMode)
+        )
 
     def configureGeneralOperatorButtonBindings(self) -> None:
         self.operatorController.getConeSelected().onTrue(
