@@ -43,17 +43,19 @@ class PickupCommand(Command):
 
         match self.getGamePieceSelected():
             case GamePieceType.kEmpty:
-                speed = 0
+                # speed = 0
+                pass
             case GamePieceType.kCube:
-                if (
-                    self.pickup.isCubeLimitSwitchHit()
-                    and not self.pickup.getLimitSwitchHitChecked()
-                ):
-                    speed = 0
-                    self.stopPickupOnLimitSwitchWhileTriggerHeld = True
-                    self.pickup.setLimitSwitchHitChecked(True)
-                else:
-                    self.pickup.setLimitSwitchHitChecked(False)
+                pass
+                # if (
+                #     self.pickup.isCubeLimitSwitchHit()
+                #     and not self.pickup.getLimitSwitchHitChecked()
+                # ):
+                #     speed = 0
+                #     self.stopPickupOnLimitSwitchWhileTriggerHeld = True
+                #     self.pickup.setLimitSwitchHitChecked(True)
+                # else:
+                #     self.pickup.setLimitSwitchHitChecked(False)
             case GamePieceType.kCone:
                 speed = -speed
 

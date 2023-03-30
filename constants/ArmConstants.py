@@ -12,9 +12,9 @@ class ArmConstants:
         kFloor = 1
         kUpperFeedStation = 2
         # kLowerFeedStation = 3
-        kGridS1 = 4
-        kGridS2 = 5
-        kGridS3 = 6
+        kGridL1 = 4
+        kGridL2 = 5
+        kGridL3 = 6
 
     class SubsystemType(Enum):
         kArm = 0
@@ -25,59 +25,62 @@ class ArmConstants:
         GamePieceType.kCone: {
             AngleType.kStow: {
                 SubsystemType.kArm: 0,
-                SubsystemType.kClaw: 0,
+                SubsystemType.kClaw: 180,
             },
             AngleType.kFloor: {
-                SubsystemType.kArm: 45,
-                SubsystemType.kClaw: 90,
+                SubsystemType.kArm: 0,
+                SubsystemType.kClaw: 105,
             },
             AngleType.kUpperFeedStation: {
-                SubsystemType.kArm: 120,
-                SubsystemType.kClaw: 90,
+                SubsystemType.kArm: 92,
+                SubsystemType.kClaw: -10,
             },
-            AngleType.kGridS1: {
-                SubsystemType.kArm: 60,
-                SubsystemType.kClaw: 90,
+            AngleType.kGridL1: {
+                SubsystemType.kArm: 20,
+                SubsystemType.kClaw: 57,
             },
-            AngleType.kGridS2: {
-                SubsystemType.kArm: 80,
-                SubsystemType.kClaw: 90,
+            AngleType.kGridL2: {
+                SubsystemType.kArm: 98,
+                SubsystemType.kClaw: -11,  # ? unsure
             },
-            AngleType.kGridS3: {
-                SubsystemType.kArm: 100,
-                SubsystemType.kClaw: 100,
+            AngleType.kGridL3: {
+                SubsystemType.kArm: 97,
+                SubsystemType.kClaw: -2,
             },
         },
         GamePieceType.kCube: {
             AngleType.kStow: {
                 SubsystemType.kArm: 0,
-                SubsystemType.kClaw: 0,
+                SubsystemType.kClaw: 180,
             },
             AngleType.kFloor: {
-                SubsystemType.kArm: 45,
-                SubsystemType.kClaw: 90,
+                # SubsystemType.kArm: 45,
+                # SubsystemType.kClaw: 90,
+                SubsystemType.kArm: 0,
+                SubsystemType.kClaw: 92,
             },
             AngleType.kUpperFeedStation: {
                 SubsystemType.kArm: 120,
                 SubsystemType.kClaw: 90,
             },
-            AngleType.kGridS1: {
-                SubsystemType.kArm: 60,
-                SubsystemType.kClaw: 90,
+            AngleType.kGridL1: {
+                SubsystemType.kArm: 30,
+                SubsystemType.kClaw: 36,
             },
-            AngleType.kGridS2: {
-                SubsystemType.kArm: 80,
-                SubsystemType.kClaw: 90,
+            AngleType.kGridL2: {
+                SubsystemType.kArm: 82,
+                SubsystemType.kClaw: 18,
             },
-            AngleType.kGridS3: {
-                SubsystemType.kArm: 100,
-                SubsystemType.kClaw: 100,
+            AngleType.kGridL3: {
+                SubsystemType.kArm: 90,
+                SubsystemType.kClaw: -1,
             },
         },
+        # ! this is the same as kCube
         GamePieceType.kEmpty: {
             AngleType.kStow: {
                 SubsystemType.kArm: 0,
-                SubsystemType.kClaw: 0,
+                SubsystemType.kClaw: 180,
             },
             AngleType.kFloor: {
                 SubsystemType.kArm: 45,
@@ -87,22 +90,22 @@ class ArmConstants:
                 SubsystemType.kArm: 120,
                 SubsystemType.kClaw: 90,
             },
-            AngleType.kGridS1: {
-                SubsystemType.kArm: 60,
-                SubsystemType.kClaw: 90,
+            AngleType.kGridL1: {
+                SubsystemType.kArm: 30,
+                SubsystemType.kClaw: 36,
             },
-            AngleType.kGridS2: {
-                SubsystemType.kArm: 80,
-                SubsystemType.kClaw: 90,
+            AngleType.kGridL2: {
+                SubsystemType.kArm: 74,
+                SubsystemType.kClaw: 20,
             },
-            AngleType.kGridS3: {
-                SubsystemType.kArm: 100,
-                SubsystemType.kClaw: 100,
+            AngleType.kGridL3: {
+                SubsystemType.kArm: 90,
+                SubsystemType.kClaw: -1,
             },
         },
     }
 
-    usePreferences = True
+    usePreferences = False
     # ! this will override the values in angles
     if usePreferences:
         for gamePiece in angles:
@@ -116,14 +119,15 @@ class ArmConstants:
 
     class Arm:
         motorType = rev.CANSparkMax.MotorType.kBrushed
+        speedScale = 0.6
         currentLimit = 40  # amps
 
         initialPosition = 0.0  # degrees
         angleTolerance = 4.0  # degrees
-        encoderOffsetHack = 0.0  # degrees
+        encoderOffsetHack = 360.0  # degrees
 
         kCANId = 10
-        kConversionFactorToDeg = 0.5532  # TODO change
+        kConversionFactorToDeg = 27.6341
         kMaxVelocityRPM = 2000  # TODO calibrate
         kMaxAccelerationRPM = 1500  # TODO calibrate
 
@@ -132,10 +136,10 @@ class ArmConstants:
 
         getEncoderArgs = (rev.SparkMaxRelativeEncoder.Type.kQuadrature, 1024)
 
-        kP = 0.001  # TODO this may have to be non-zero for smart motion to work
+        kP = 0.0004  # TODO this may have to be non-zero for smart motion to work
         kI = 0
         kIz = 0
-        kD = 0
+        kD = 0.0001
         kFF = 0
         # TODO calibrate
         kS = 0.02
@@ -149,16 +153,17 @@ class ArmConstants:
 
     class Claw:
         motorType = rev.CANSparkMax.MotorType.kBrushless
+        speedScale = 0.5
         currentLimit = 20  # amps
 
         initialPosition = 180.0  # degrees
         angleTolerance = 4.0  # degrees
         # Hack to stop the encoder from going below 0 and underflowing
-        encoderOffsetHack = 360.0  # degrees
+        encoderOffsetHack = 0.0  # degrees
 
         kCANId = 11
-        kConversionFactorToDeg = 10  # TODO change
-        kMaxVelocityRPM = 1000  # TODO calibrate
+        kConversionFactorToDeg = 2.99089
+        kMaxVelocityRPM = 1500  # TODO calibrate
         kMaxAccelerationRPM = 500  # TODO calibrate
 
         kForwardSoftLimit = 180  # degrees
@@ -166,7 +171,7 @@ class ArmConstants:
 
         getEncoderArgs = ()
 
-        kP = 0
+        kP = 0.0003
         kI = 0
         kIz = 0
         kD = 0
