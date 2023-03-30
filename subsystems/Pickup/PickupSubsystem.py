@@ -15,12 +15,7 @@ class PickupSubsystem(Subsystem):
         self.pickupMotor = rev.CANSparkMax(12, rev.CANSparkMax.MotorType.kBrushless)
         self.pickupMotor.setSmartCurrentLimit(15)
 
-        self.cubeLimitSwitch = wpilib.DigitalInput(0)
-
         self.limitSwitchHitChecked = False
-
-    def isCubeLimitSwitchHit(self):
-        return self.cubeLimitSwitch.get()
 
     def getLimitSwitchHitChecked(self):
         return self.limitSwitchHitChecked
