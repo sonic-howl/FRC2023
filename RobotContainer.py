@@ -2,7 +2,6 @@ from commands.Auto.PPAutoSelector import PPAutonomousSelector
 from commands.Claw.ArmCommand import ArmCommand
 from commands2 import InstantCommand
 from constants.ArmConstants import ArmConstants
-from photonvision import PhotonCamera
 
 from commands.Claw.ManualMoveClawCommand import ManualMoveClawCommand
 from commands.Pickup.PickupCommand import PickupCommand
@@ -30,7 +29,7 @@ class RobotContainer:
         self.pickupSubsystem = PickupSubsystem(self.operatorController)
 
         self.autoSelector = PPAutonomousSelector(
-            self.swerveSubsystem, self.armAssemblySubsystem
+            self.swerveSubsystem, self.armAssemblySubsystem, self.pickupSubsystem
         )
 
         self.configureButtonBindings()

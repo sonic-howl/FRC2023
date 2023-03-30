@@ -2,6 +2,7 @@ import os
 from commands.Auto.PPAutonomousCommand import PPAutonomousCommand
 from constants.RobotConstants import RobotConstants
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
+from subsystems.Pickup.PickupSubsystem import PickupSubsystem
 from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 
 from wpilib import SendableChooser, SmartDashboard
@@ -12,13 +13,18 @@ class PPAutonomousSelector:
         self,
         swerveSubsystem: SwerveSubsystem,
         armAssemblySubsystem: ArmAssemblySubsystem,
+        pickupSubsystem: PickupSubsystem,
     ):
         self.swerveSubsystem = swerveSubsystem
         self.armAssemblySubsystem = armAssemblySubsystem
+        self.pickupSubsystem = pickupSubsystem
 
         # best variable name ever
-        self._PPPathsPath = "/home/lvuser/py/deploy/pathplanner" if not RobotConstants.isSimulation else f"{os.getcwd()}/deploy/pathplanner"
-
+        self._PPPathsPath = (
+            "/home/lvuser/py/deploy/pathplanner"
+            if not RobotConstants.isSimulation
+            else f"{os.getcwd()}/deploy/pathplanner"
+        )
 
         self.chooser: SendableChooser | None = None
 
@@ -44,7 +50,10 @@ class PPAutonomousSelector:
         self.chooser.setDefaultOption(
             autoPaths[0],
             PPAutonomousCommand(
-                self.swerveSubsystem, self.armAssemblySubsystem, autoPaths[0]
+                self.swerveSubsystem,
+                self.armAssemblySubsystem,
+                self.pickupSubsystem,
+                autoPaths[0],
             ),
         )
 
@@ -52,7 +61,10 @@ class PPAutonomousSelector:
             self.chooser.addOption(
                 path,
                 PPAutonomousCommand(
-                    self.swerveSubsystem, self.armAssemblySubsystem, path
+                    self.swerveSubsystem,
+                    self.armAssemblySubsystem,
+                    self.pickupSubsystem,
+                    path,
                 ),
             )
 
