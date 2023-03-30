@@ -1,8 +1,8 @@
+import math
 from typing import Callable, Set
 
 from commands2 import Command, Subsystem
-from wpimath.controller import PIDController
-from wpimath.filter._filter import SlewRateLimiter
+from wpimath.filter import SlewRateLimiter
 from wpimath.kinematics import ChassisSpeeds
 
 from constants.RobotConstants import RobotConstants
@@ -26,24 +26,11 @@ class SwerveCommand(Command):
         self.controller = controller
         self.get_field_oriented = getFieldOriented
 
-        self.xLimiter = SlewRateLimiter(
-            SwerveConstants.kDriveMaxAccelerationMetersPerSecond
-        )
-        self.yLimiter = SlewRateLimiter(
-            SwerveConstants.kDriveMaxAccelerationMetersPerSecond
-        )
-        self.zLimiter = SlewRateLimiter(
-            SwerveConstants.kDriveMaxTurnAccelerationMetersPerSecond
-        )
-
-        self.rotate_to_angle_pid = PIDController(
-            SwerveConstants.kPRobotTurn,
-            SwerveConstants.kIRobotTurn,
-            SwerveConstants.kDRobotTurn,
-            period=RobotConstants.period,
-        )
-        self.rotate_to_angle_pid.enableContinuousInput(-180, 180)
-        self.rotate_to_angle_pid.setTolerance(5)  # degrees tolerance
+        # self.xLimiter = SlewRateLimiter(
+        #     SwerveConstants.kDriveXLimit, -SwerveConstants.kDriveXLimit
+        # )
+        # self.yLimiter = SlewRateLimiter(SwerveConstants.kDriveYLimit)
+        self.zLimiter = SlewRateLimiter(SwerveConstants.kDriveZLimit)
 
     def getRequirements(self) -> Set[Subsystem]:
         return {self.swerveSubsystem}
@@ -66,13 +53,15 @@ class SwerveCommand(Command):
         pov = self.controller.getRotateToAngle()
         if pov != -1:
             # TODO calibrate this PID controller
-            z = self.rotate_to_angle_pid.calculate(self.swerveSubsystem.getAngle(), pov)
+            z = self.swerveSubsystem.theta_pid.calculate(
+                math.radians(self.swerveSubsystem.getAngle()),
+                math.radians(360 - pov),
+            )
+            # print("pov debug: ", pov, self.swerveSubsystem.getAngle(), z)
         else:
             z = self.controller.getTurn() * speed_scale
-            z = calcAxisSpeedWithCurvatureAndDeadzone(z)
-            # z = self.z_limiter.calculate(z)
-
-        # chassis_speeds: ChassisSpeeds | None = None
+            # z = self.zLimiter.calculate(z)
+            z = calcAxisSpeedWithCurvatureAndDeadzone(z) * RobotConstants.rotationScale
 
         magnitude = abs(x) + abs(y) + abs(z)
         if dz(magnitude) > 0:
@@ -83,7 +72,7 @@ class SwerveCommand(Command):
             y *= SwerveConstants.kDriveMaxMetersPerSecond
             # y = self.yLimiter.calculate(y)
 
-            # z = self.zLimiter.calculate(z)
+            z = self.zLimiter.calculate(z)
 
             if self.get_field_oriented():
                 chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(

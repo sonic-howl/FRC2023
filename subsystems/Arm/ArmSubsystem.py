@@ -1,6 +1,8 @@
 import math
 from typing import Type
 
+from wpilib import SmartDashboard
+
 import rev
 import wpilib
 from commands2 import SubsystemBase
@@ -14,6 +16,10 @@ class ArmSubsystem(SubsystemBase):
     def __init__(self, constants: Type[ArmConstants.Arm | ArmConstants.Claw]) -> None:
         super().__init__()
 
+        self.name = constants.name
+        self.kReverseLimitSwitchNormallyClosed = (
+            constants.kReverseLimitSwitchNormallyClosed
+        )
         self.encoderOffsetHack = constants.encoderOffsetHack
         self.initialPosition = constants.initialPosition + self.encoderOffsetHack
         self.angleTolerance = constants.angleTolerance
@@ -80,6 +86,12 @@ class ArmSubsystem(SubsystemBase):
             constants.kA,
         )
 
+        # limit switch setup
+        if not RobotConstants.isSimulation:
+            self.reverseLimitSwitch = wpilib.DigitalInput(
+                constants.kReverseLimitSwitchId
+            )
+
         # acceleration calculation
         self.timer = wpilib.Timer()
         self.timer.start()
@@ -88,15 +100,16 @@ class ArmSubsystem(SubsystemBase):
         self.acceleration = 0.0
 
         self.lastSetAngle = self.initialPosition
+        self.shouldHoldPosition = True
 
     def periodic(self) -> None:
         # calculating acceleration periodically so it's always up to date for the feedforward controller
         # ? maybe this could be moved into setAngle()?
-        velocity = self.armEncoder.getVelocity()
-        now = float(self.timer.get())
-        self.acceleration = (velocity - self.lastVelocity) / (now - self.lastTime)
-        self.lastVelocity = velocity
-        self.lastTime = now
+        # velocity = self.armEncoder.getVelocity()
+        # now = float(self.timer.get())
+        # self.acceleration = (velocity - self.lastVelocity) / (now - self.lastTime)
+        # self.lastVelocity = velocity
+        # self.lastTime = now
 
         # set position to zero when there is speed being applied and the velocity is zero
         # if self.armMotor.get()
@@ -109,23 +122,56 @@ class ArmSubsystem(SubsystemBase):
         # ):
         #     self.armEncoder.setPosition(self.initialPosition)
 
-    def setAngle(self, angle: float):
+        # self.lastSetAngle = self.getAngle()
+        if not RobotConstants.isSimulation:
+            self.stopOnLimitSwitch()
+
+        if self.shouldHoldPosition:
+            self._holdPosition()
+
+    def stopOnLimitSwitch(self):
+        limitSwitchPressed = self.reverseLimitSwitch.get()
+
+        if self.kReverseLimitSwitchNormallyClosed:
+            limitSwitchPressed = not limitSwitchPressed
+
+        # will show up in shuffleboard as green if the limit switch is pressed
+        # depending on whether it's normally open or normally closed
+        SmartDashboard.putBoolean(f"{self.name} Limit Hit", limitSwitchPressed)
+
+        # if self.armEncoder.getVelocity() < 0:
+        if self.armMotor.get() < 0:
+            if limitSwitchPressed:
+                # reset encoder position
+                # TODO test this
+                # maybe position should only be reset manually
+                # this may mess with the angles we've calibrated
+                self.resetPosition()
+
+                self.armMotor.stopMotor()
+
+    def updateLastSetAngle(self):
+        self.lastSetAngle = self.getAngle()
+
+    def moveArmToAngle(self, angle: float):
         """
         Sets the angle of the arm in degrees.
         :param angle: The angle to set the arm to in degrees.
         :param ffVoltage: The feedforward voltage to apply to the arm.
         """
-        velocity = self.armEncoder.getVelocity()
-        ffVoltage = self.armFF.calculate(
-            math.radians(angle), velocity, self.acceleration
-        )
+        # velocity = self.armEncoder.getVelocity()
+        # ffVoltage = self.armFF.calculate(
+        #     math.radians(angle), velocity, self.acceleration
+        # )
 
         offsetAngle = angle + self.encoderOffsetHack
+
+        # print("offset angle", offsetAngle)
 
         self.armPID.setReference(
             offsetAngle,
             rev.CANSparkMax.ControlType.kSmartMotion,
-            arbFeedforward=ffVoltage,
+            # arbFeedforward=ffVoltage,
         )
 
         self.lastSetAngle = angle
@@ -151,9 +197,34 @@ class ArmSubsystem(SubsystemBase):
         """
         return abs(self.getAngle() - self.lastSetAngle) < self.angleTolerance
 
-    def addAngle(self, angle: float):
+    def resetPosition(self):
         """
-        Adds an angle to the current angle of the arm in degrees.
-        :param angle: The angle to add to the arm in degrees.
+        Resets the position of the arm encoder it's initial position.
         """
-        self.setAngle(self.getAngle() + angle)
+        self.armEncoder.setPosition(self.initialPosition)
+
+    def setPosition(self, position: float):
+        """
+        Sets the position of the arm encoder in degrees.
+        :param position: The position to set the arm to in degrees.
+        """
+        self.armEncoder.setPosition(position)
+
+    # def addAngle(self, angle: float):
+    #     """
+    #     Adds an angle to the current angle of the arm in degrees.
+    #     :param angle: The angle to add to the arm in degrees.
+    #     """
+    #     self.setAngle(self.getAngle() + angle)
+
+    def stopHoldingPosition(self):
+        self.shouldHoldPosition = False
+
+    def startHoldingPosition(self):
+        self.shouldHoldPosition = True
+
+    def _holdPosition(self):
+        """
+        Holds the current position of the arm.
+        """
+        self.moveArmToAngle(self.lastSetAngle)

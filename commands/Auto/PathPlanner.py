@@ -1,3 +1,4 @@
+from threading import Timer
 from typing import Callable, Dict, List
 
 import wpilib
@@ -118,6 +119,9 @@ class PathTraverser:
                     else:
                         cb(event_marker)
         if time > total_time:
+            if self.stop_event.waitTime > 0.0:
+                self.timer.stop()
+                Timer(self.stop_event.waitTime, self.timer.start)
             for stop_cb in self.stop_event_callbacks:
                 if isinstance(stop_cb, Command):
                     stop_cb.schedule()

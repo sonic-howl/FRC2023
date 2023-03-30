@@ -30,27 +30,21 @@ class Robot(wp.TimedRobot):
         # )
 
         self.robotContainer = RobotContainer()
-        # testing
-        # self.robot_container.buildPPAutonomousCommand()
 
-        if wp.DriverStation.isFMSAttached():
-            print("FMS is attached")
-        else:
-            closeListeners = configureArmAnglePreferences()
-
-        self.swerveAutoCommand = self.robotContainer.swerveAutoCommand
+        self.swerveAutoCommand = self.robotContainer.getAutonomousCommand()
 
     lastArmPos = 0.0
 
     def robotPeriodic(self) -> None:
-        armPos = self.robotContainer.armAssemblySubsystem.arm.armEncoder.getPosition()
-        if armPos != self.lastArmPos:
-            print(
-                "current arm pos:",
-                armPos,
-            )
-            # self.robot_container.robotPeriodic()
-        self.lastArmPos = armPos
+        # arm angle calibration
+        # armPos = self.robotContainer.armAssemblySubsystem.arm.armEncoder.getPosition()
+        # if armPos != self.lastArmPos:
+        #     print(
+        #         "current arm pos:",
+        #         armPos,
+        #     )
+        #     # self.robot_container.robotPeriodic()
+        # self.lastArmPos = armPos
 
         self.gyro_topic.set(self.robotContainer.get_angle())
 
@@ -72,7 +66,7 @@ class Robot(wp.TimedRobot):
         #     auto_command.schedule()
         #     print("Auto command scheduled")
         # self.robot_container.autonomousInit()
-
+        self.swerveAutoCommand = self.robotContainer.getAutonomousCommand()
         self.swerveAutoCommand.schedule()
 
     def autonomousExit(self) -> None:
