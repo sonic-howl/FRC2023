@@ -56,6 +56,14 @@ class Robot(wp.TimedRobot):
         # self.lastArmPos = armPos
 
         self.gyro_topic.set(self.robotContainer.get_angle())
+        
+        # Used for Calibrating Arm soft Stops (#TODO remove later)
+        wp.SmartDashboard.putNumber("Arm Angle", self.robotContainer.armAssemblySubsystem.arm.getAngle())
+        wp.SmartDashboard.putNumber("Claw Angle", self.robotContainer.armAssemblySubsystem.claw.getAngle())
+
+        # Used to debug limit switches (#TODO remove later)
+        wp.SmartDashboard.putBoolean("ArmLimitSwtich", self.armLimitSwitch.get())
+        wp.SmartDashboard.putBoolean("ClawLimitSwitch", self.clawLimitSwitch.get())
 
         self.turner_topic.set(
             # self.robot_container.swerve_subsystem.front_left.turn_encoder.getPosition()
