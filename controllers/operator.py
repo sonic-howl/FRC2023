@@ -1,8 +1,10 @@
 from threading import Thread
 from time import sleep
 from typing import Callable
+from constants.GeneralConstants import POVAngles
 
-from commands2.button import CommandXboxController
+from commands2.button import CommandXboxController, POVButton
+from wpimath.filter import Debouncer
 
 from constants.RobotConstants import RobotConstants
 from utils.utils import dz
@@ -23,33 +25,37 @@ class OperatorController:
 
         Thread(target=checkConnection).start()
 
-    def getTopGrid(self):
+    def getL3Grid(self):
         return self._controller.Y()
 
-    def getMiddleGrid(self):
+    def getL2Grid(self):
         return self._controller.B()
 
-    def getBottomGrid(self):
+    def getL1Grid(self):
         return self._controller.A()
 
     def getFloorPickup(self):
-        return self._controller.POVDown()
+        return POVButton(self._controller, POVAngles.DOWN)
 
     def getStowClaw(self):
-        return self._controller.POVLeft()
+        return POVButton(self._controller, POVAngles.LEFT)
 
     def getUpperFeedStation(self):
-        return self._controller.POVUp()
+        return POVButton(self._controller, POVAngles.UP)
 
     def getConeSelected(self):
-        return self._controller.leftBumper()
+        return self._controller.leftBumper().and_(self._controller.rightBumper().not_())
 
     def getCubeSelected(self):
-        return self._controller.rightBumper()
+        return self._controller.rightBumper().and_(self._controller.leftBumper().not_())
 
     def getEmptySelected(self):
-        # return self._controller.leftBumper().and_(self._controller.rightBumper()) # TODO try this
-        return self._controller.POVRight()
+        # return (
+        #     self._controller.leftBumper()
+        #     .and_(self._controller.rightBumper())
+        #     .debounce(0.25, Debouncer.DebounceType.kFalling)
+        # )  # TODO try this
+        return POVButton(self._controller, POVAngles.RIGHT)
 
     def getClawRotation(self):
         return dz(self._controller.getLeftY())
@@ -57,7 +63,7 @@ class OperatorController:
     def getArmRotation(self):
         return -dz(self._controller.getRightY())
 
-    def getZeroEncoderPosition(self):
+    def getResetArmAndClawPosition(self):
         return self._controller.X()
 
     def getPickupIntakeSpeed(self):

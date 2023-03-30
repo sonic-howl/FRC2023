@@ -1,13 +1,13 @@
 import typing
 
-from commands2 import Command, Subsystem
+from commands2 import CommandBase, Subsystem
 
 from constants.GameConstants import GamePieceType
 from controllers.operator import OperatorController
 from subsystems.Pickup.PickupSubsystem import PickupSubsystem
 
 
-class PickupCommand(Command):
+class PickupCommand(CommandBase):
     def __init__(
         self,
         pickup: PickupSubsystem,
@@ -17,13 +17,13 @@ class PickupCommand(Command):
         super().__init__()
 
         self.controller = controller
+
         self.pickup = pickup
+        self.addRequirements(self.pickup)
+
         self.getGamePieceSelected = getGamePieceSelected
 
         self.stopPickupOnLimitSwitchWhileTriggerHeld = False
-
-    def getRequirements(self) -> typing.Set[Subsystem]:
-        return {self.pickup}
 
     def execute(self) -> None:
         if not self.controller.isConnected():
@@ -35,25 +35,33 @@ class PickupCommand(Command):
         intakeSpeed = self.controller.getPickupIntakeSpeed()
         speed = releaseSpeed + intakeSpeed
 
-        if self.stopPickupOnLimitSwitchWhileTriggerHeld:
-            if speed == 0:
-                self.stopPickupOnLimitSwitchWhileTriggerHeld = False
-            self.pickup.set(0)
+        # if the speed is 0, don't let the intake move.
+        # Superior to brake mode, this is to prevent the intake from dropping a cone
+        if speed == 0:
+            self.pickup.holdPosition()
             return
+
+        # if self.stopPickupOnLimitSwitchWhileTriggerHeld:
+        #     if speed == 0:
+        #         self.stopPickupOnLimitSwitchWhileTriggerHeld = False
+        #     self.pickup.set(0)
+        #     return
 
         match self.getGamePieceSelected():
             case GamePieceType.kEmpty:
-                speed = 0
+                # speed = 0
+                pass
             case GamePieceType.kCube:
-                if (
-                    self.pickup.isCubeLimitSwitchHit()
-                    and not self.pickup.getLimitSwitchHitChecked()
-                ):
-                    speed = 0
-                    self.stopPickupOnLimitSwitchWhileTriggerHeld = True
-                    self.pickup.setLimitSwitchHitChecked(True)
-                else:
-                    self.pickup.setLimitSwitchHitChecked(False)
+                pass
+                # if (
+                #     self.pickup.isCubeLimitSwitchHit()
+                #     and not self.pickup.getLimitSwitchHitChecked()
+                # ):
+                #     speed = 0
+                #     self.stopPickupOnLimitSwitchWhileTriggerHeld = True
+                #     self.pickup.setLimitSwitchHitChecked(True)
+                # else:
+                #     self.pickup.setLimitSwitchHitChecked(False)
             case GamePieceType.kCone:
                 speed = -speed
 

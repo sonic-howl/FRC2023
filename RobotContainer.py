@@ -1,8 +1,9 @@
+from commands.Auto.PPAutoSelector import PPAutonomousSelector
+from commands.Claw.ArmCommand import ArmCommand
 from commands2 import InstantCommand
-from photonvision import PhotonCamera
+from constants.ArmConstants import ArmConstants
 
-from commands.Auto.SwerveAutoCommand import SwerveAutoCommand
-from commands.Claw.MoveClawCommand import MoveClawCommand
+from commands.Claw.ManualMoveClawCommand import ManualMoveClawCommand
 from commands.Pickup.PickupCommand import PickupCommand
 from commands.SwerveCommand import SwerveCommand
 from constants.GameConstants import GamePieceType
@@ -10,32 +11,35 @@ from controllers.operator import OperatorController
 from controllers.pilot import PilotController
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 from subsystems.Pickup.PickupSubsystem import PickupSubsystem
+from subsystems.Swerve.LLTable import LLTable
 from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 
 
 class RobotContainer:
-    pilotController = PilotController()
-    operatorController = OperatorController()
-
     field_oriented = True
-
-    photon_camera = PhotonCamera("photonvision")
 
     selectedGamePiece = GamePieceType.kEmpty
 
     def __init__(self) -> None:
+        self.pilotController = PilotController()
+        self.operatorController = OperatorController()
+
         self.swerveSubsystem = SwerveSubsystem()
         self.armAssemblySubsystem = ArmAssemblySubsystem(self.operatorController)
-        self.pickup = PickupSubsystem(self.operatorController)
+        self.pickupSubsystem = PickupSubsystem(self.operatorController)
 
-        self.setupSwerve()
-        self.setupArm()
-        self.setupPickup()
+        self.autoSelector = PPAutonomousSelector(
+            self.swerveSubsystem, self.armAssemblySubsystem, self.pickupSubsystem
+        )
 
         self.configureButtonBindings()
 
         # self.light_strip = LightStrip(Constants.light_strip_pwm_port)
         # self.light_strip.setRainbowSlow()
+
+    def robotPeriodic(self):
+        # self.light_strip.update()
+        pass
 
     @staticmethod
     def getSelectedGamePiece():
@@ -43,36 +47,43 @@ class RobotContainer:
 
     @staticmethod
     def setSelectedGamePiece(gamePiece: GamePieceType):
+        print("Selected game piece: " + gamePiece.name)
         RobotContainer.selectedGamePiece = gamePiece
 
     def get_angle(self):
         return self.swerveSubsystem.getAngle()
 
-    def vision_track(self):
-        if self.photon_camera.hasTargets():
-            target = self.photon_camera.getLatestResult().getBestTarget()
-            transform_to_target = target.getBestCameraToTarget()
-            # TODO
+    def getAutonomousCommand(self):
+        return self.autoSelector.getSelectedAutonomousCommand()
 
     def configureButtonBindings(self) -> None:
         c1Connected = self.pilotController.isConnected()
         c2Connected = self.operatorController.isConnected()
         if c1Connected:
-            self.configureSwerveButtonBindings()
+            self.setupSwerve()
+            self.configureGeneralPilotButtonBindings()
         else:
-            self.pilotController.onceConnected(self.configureSwerveButtonBindings)
+            self.pilotController.onceConnected(self.setupSwerve)
         if c2Connected:
-            self.configureGeneralButtonBindings()
-            self.configureArmButtonBindings()
+            self.setupArm()
+            self.setupPickup()
+            self.configureGeneralOperatorButtonBindings()
         else:
 
             def onConnected():
-                self.configureGeneralButtonBindings()
-                self.configureArmButtonBindings()
+                self.setupArm()
+                self.setupPickup()
+                self.configureGeneralOperatorButtonBindings()
 
             self.operatorController.onceConnected(onConnected)
 
-    def configureGeneralButtonBindings(self) -> None:
+    def configureGeneralPilotButtonBindings(self) -> None:
+        ll = LLTable.getInstance()
+        self.pilotController.toggleLLVisionBtn().onTrue(
+            InstantCommand(ll.toggleCamMode)
+        )
+
+    def configureGeneralOperatorButtonBindings(self) -> None:
         self.operatorController.getConeSelected().onTrue(
             InstantCommand(lambda: self.setSelectedGamePiece(GamePieceType.kCone))
         )
@@ -92,9 +103,7 @@ class RobotContainer:
             )
         )
 
-        self.swerveAutoCommand = SwerveAutoCommand(
-            self.swerveSubsystem, self.armAssemblySubsystem
-        )
+        self.configureSwerveButtonBindings()
 
     def getFieldOriented(self) -> bool:
         return self.field_oriented
@@ -113,18 +122,55 @@ class RobotContainer:
 
     def setupArm(self):
         self.armAssemblySubsystem.setDefaultCommand(
-            MoveClawCommand(self.armAssemblySubsystem, self.operatorController)
+            ManualMoveClawCommand(self.armAssemblySubsystem, self.operatorController)
         )
 
+        self.configureArmButtonBindings()
+
     def configureArmButtonBindings(self) -> None:
-        self.operatorController.getZeroEncoderPosition().onTrue(
-            InstantCommand(self.armAssemblySubsystem.resetArm)
+        self.operatorController.getResetArmAndClawPosition().onTrue(
+            InstantCommand(self.armAssemblySubsystem.resetArmAndClawPositions)
+        )
+        self.operatorController.getFloorPickup().whileTrue(
+            ArmCommand(
+                self.armAssemblySubsystem,
+                self.getSelectedGamePiece,
+                ArmConstants.AngleType.kFloor,
+            )
+        )
+        self.operatorController.getUpperFeedStation().whileTrue(
+            ArmCommand(
+                self.armAssemblySubsystem,
+                self.getSelectedGamePiece,
+                ArmConstants.AngleType.kUpperFeedStation,
+            )
+        )
+        self.operatorController.getL1Grid().whileTrue(
+            ArmCommand(
+                self.armAssemblySubsystem,
+                self.getSelectedGamePiece,
+                ArmConstants.AngleType.kGridL1,
+            )
+        )
+        self.operatorController.getL2Grid().whileTrue(
+            ArmCommand(
+                self.armAssemblySubsystem,
+                self.getSelectedGamePiece,
+                ArmConstants.AngleType.kGridL2,
+            )
+        )
+        self.operatorController.getL3Grid().whileTrue(
+            ArmCommand(
+                self.armAssemblySubsystem,
+                self.getSelectedGamePiece,
+                ArmConstants.AngleType.kGridL3,
+            )
         )
 
     def setupPickup(self):
-        self.pickup.setDefaultCommand(
+        self.pickupSubsystem.setDefaultCommand(
             PickupCommand(
-                self.pickup, self.operatorController, self.getSelectedGamePiece
+                self.pickupSubsystem, self.operatorController, self.getSelectedGamePiece
             )
         )
 

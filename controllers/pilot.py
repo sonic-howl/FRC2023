@@ -44,3 +44,9 @@ class PilotController:
 
     def resetGyroBtn(self):
         return self._controller.Y()
+
+    def toggleLLVisionBtn(self):
+        return self._controller.B()
+
+    def getTrackTargetBtn(self):
+        return self._controller.getAButton()

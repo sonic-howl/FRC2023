@@ -1,7 +1,14 @@
-import typing
+from commands.Claw.ArmCommand import ArmCommand
 
-from commands2 import Command, Subsystem
+from commands2 import (
+    CommandBase,
+    InstantCommand,
+    WaitCommand,
+    RepeatCommand,
+)
+from constants.GameConstants import GamePieceType
 from pathplannerlib import PathPlannerTrajectory
+from subsystems.Pickup.PickupSubsystem import PickupSubsystem
 from wpimath.controller import (
     HolonomicDriveController,
     PIDController,
@@ -10,28 +17,32 @@ from wpimath.controller import (
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.trajectory import TrapezoidProfileRadians
 
-from commands.Claw.StowCommand import StowCommand
 from constants.ArmConstants import ArmConstants
-from constants.GameConstants import GamePieceType
 from constants.RobotConstants import RobotConstants
 from constants.SwerveConstants import SwerveConstants
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
 from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 from utils.utils import printAsync
 
-from .PathPlanner import PathTraverser
+from commands.Auto.PathPlanner import PathTraverser
 
 
-class SwerveAutoCommand(Command):
+class PPAutonomousCommand(CommandBase):
     def __init__(
         self,
         swerveSubsystem: SwerveSubsystem,
         armAssemblySubsystem: ArmAssemblySubsystem,
+        pickupSubsystem: PickupSubsystem,
+        pathName: str,
     ) -> None:
         super().__init__()
 
         self.swerveSubsystem = swerveSubsystem
         self.armAssemblySubsystem = armAssemblySubsystem
+        self.pickupSubsystem = pickupSubsystem
+        self.addRequirements(
+            self.swerveSubsystem, self.armAssemblySubsystem, self.pickupSubsystem
+        )
 
         # TODO maybe move these to the swerve class, or have something similar
         x_pid = PIDController(1, 0, 0, period=RobotConstants.period)
@@ -54,7 +65,7 @@ class SwerveAutoCommand(Command):
         # self.traverser = PathTraverser("Forwards_1m")
         # self.traverser = PathTraverser("Spin_90")
         # self.traverser = PathTraverser("Forwards_1m Spin_90")
-        self.traverser = PathTraverser("FullPath")
+        self.traverser = PathTraverser(pathName)
 
         def handle_stop(stop_event: PathPlannerTrajectory.StopEvent) -> None:
             printAsync(
@@ -68,25 +79,61 @@ class SwerveAutoCommand(Command):
             )
 
         self.traverser.on_stop(handle_stop)
-        self.traverser.on(
-            f"{GamePieceType.kCone.name}/{ArmConstants.AngleType.kStow.name}",
-            StowCommand(self.armAssemblySubsystem),
-        )
+
+        # ! when planning a path in PathPlanner, make sure the events have
+        # ! the same convention as the Enums (ex: "kCone/kGridL2")
+        for gamePieceType, angleTypeDict in ArmConstants.angles.items():
+            for angleType in angleTypeDict.keys():
+                self.traverser.on(
+                    f"{gamePieceType.name}/{angleType.name}",
+                    ArmCommand(
+                        self.armAssemblySubsystem,
+                        lambda gamePieceType=gamePieceType: gamePieceType,
+                        angleType,
+                    ),
+                )
+
+        def makePickupHandler(gamePieceType: GamePieceType):
+            speed = 1
+            if gamePieceType == GamePieceType.kCone:
+                speed = -speed
+
+            self.traverser.on(
+                f"{gamePieceType.name}/intakePickup",
+                WaitCommand(2).deadlineWith(
+                    RepeatCommand(
+                        InstantCommand(
+                            lambda: self.pickupSubsystem.pickupMotor.set(speed)
+                        )
+                    )
+                ),
+            )
+            self.traverser.on(
+                f"{gamePieceType.name}/releasePickup",
+                WaitCommand(1).deadlineWith(
+                    RepeatCommand(
+                        InstantCommand(
+                            lambda: self.pickupSubsystem.pickupMotor.set(-speed)
+                        )
+                    )
+                ),
+            )
+
+        makePickupHandler(GamePieceType.kCone)
+        makePickupHandler(GamePieceType.kCube)
 
         self.finished = False
-
-    def getRequirements(self) -> typing.Set[Subsystem]:
-        return {self.swerveSubsystem}
 
     def initialize(self) -> None:
         self.finished = False
-        self.swerveSubsystem.resetOdometer()
-        self.swerveSubsystem.resetGyro()
+        # self.swerveSubsystem.resetOdometer()
+        self.swerveSubsystem.resetGyro()  # may also be problematic
         self.traverser.reset()
 
         state = self.traverser.get_initial_state()
         self.swerveSubsystem.swerveAutoStartPose = state.pose
-        self.swerveSubsystem.resetOdometer(state.pose)  # may be problematic
+        # the robot's odometry should be initialized to the pose returned by the camera using AprilTags
+        # self.swerveSubsystem.resetOdometer(state.pose)  # may be problematic
         # self.move_to_state(state)
         # print_async(
         #     "SwerveAutoCommand initialized:",

@@ -1,12 +1,18 @@
 {
   "python.formatting.provider": "black",
   "cSpell.words": [
+    "botpose",
     "Brushless",
     "ctre",
     "dtheta",
     "Feedforward",
     "ntcore",
     "pathplannerlib",
-    "Setpoint"
-  ]
+    "robo",
+    "Setpoint",
+    "Setpoints"
+  ],
+  "python.linting.pylintEnabled": true,
+  "python.linting.mypyEnabled": false,
+  "python.linting.enabled": true
 }
