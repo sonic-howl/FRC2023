@@ -13,6 +13,8 @@ class Robot(wp.TimedRobot):
         super().__init__(period)
 
     def robotInit(self) -> None:
+        wp.CameraServer.launch()
+
         RobotConstants.isSimulation = self.isSimulation()
 
         # self.smartDashboard = NetworkTables.getTable("SmartDashboard")
