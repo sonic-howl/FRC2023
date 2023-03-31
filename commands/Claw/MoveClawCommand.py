@@ -37,11 +37,13 @@ class MoveClawCommand(Command):
     def execute(self) -> None:
         if self.controller.isConnected():
             armSpeed = self.controller.getArmRotation() * ArmConstants.Arm.speedScale
-            if abs(armSpeed) > 0:
+            
+            if abs(armSpeed) > 0 and (armSpeed < 0 or self.armSubsystem.arm.getAngle() <= 130):
                 self.armSubsystem.stopHoldArmPosition()
                 self.armSubsystem.arm.armMotor.set(armSpeed)
             clawSpeed = self.controller.getClawRotation() * ArmConstants.Claw.speedScale
-            if abs(clawSpeed) > 0:
+            lowerClawLimit = 90 - self.armSubsystem.arm.getAngle()
+            if abs(clawSpeed) > 0 and (clawSpeed > 0 or self.armSubsystem.claw.getAngle() > lowerClawLimit):
                 self.armSubsystem.stopHoldClawPosition()
                 self.armSubsystem.claw.armMotor.set(clawSpeed)
 
