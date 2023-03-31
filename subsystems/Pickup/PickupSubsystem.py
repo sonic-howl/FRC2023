@@ -4,7 +4,6 @@ from commands2 import Subsystem
 import wpilib
 
 from controllers.operator import OperatorController
-from constants.RobotConstants import LimitSwitchConstants 
 
 
 class PickupSubsystem(Subsystem):
@@ -16,7 +15,7 @@ class PickupSubsystem(Subsystem):
         self.pickupMotor = rev.CANSparkMax(12, rev.CANSparkMax.MotorType.kBrushless)
         self.pickupMotor.setSmartCurrentLimit(15)
 
-        self.cubeLimitSwitch = wpilib.DigitalInput(LimitSwitchConstants.cubeLimitSwitchID)
+        self.cubeLimitSwitch = wpilib.DigitalInput(0)
 
         self.limitSwitchHitChecked = False
 

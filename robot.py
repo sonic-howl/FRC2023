@@ -3,10 +3,9 @@ from commands2 import CommandScheduler
 from ntcore import NetworkTableInstance
 
 from ArmAnglesConfigurator import configureArmAnglePreferences
-from constants.RobotConstants import RobotConstants, LimitSwitchConstants
+from constants.RobotConstants import RobotConstants
 from RobotContainer import RobotContainer
 from utils.utils import printAsync
-from wpilib import DigitalInput
 
 
 class Robot(wp.TimedRobot):
@@ -34,9 +33,6 @@ class Robot(wp.TimedRobot):
 
         self.swerveAutoCommand = self.robotContainer.getAutonomousCommand()
 
-        self.armLimitSwitch = DigitalInput(LimitSwitchConstants.armLimitSwitchID)
-        self.clawLimitSwitch = DigitalInput(LimitSwitchConstants.clawLimitSwitchID)
-
         if wp.DriverStation.isFMSAttached():
             print("FMS is attached")
         else:
@@ -56,14 +52,6 @@ class Robot(wp.TimedRobot):
         # self.lastArmPos = armPos
 
         self.gyro_topic.set(self.robotContainer.get_angle())
-        
-        # Used for Calibrating Arm soft Stops (#TODO remove later)
-        wp.SmartDashboard.putNumber("Arm Angle", self.robotContainer.armAssemblySubsystem.arm.getAngle())
-        wp.SmartDashboard.putNumber("Claw Angle", self.robotContainer.armAssemblySubsystem.claw.getAngle())
-
-        # Used to debug limit switches (#TODO remove later)
-        wp.SmartDashboard.putBoolean("ArmLimitSwtich", self.armLimitSwitch.get())
-        wp.SmartDashboard.putBoolean("ClawLimitSwitch", self.clawLimitSwitch.get())
 
         self.turner_topic.set(
             # self.robot_container.swerve_subsystem.front_left.turn_encoder.getPosition()
