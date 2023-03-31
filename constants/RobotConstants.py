@@ -27,3 +27,8 @@ class RobotConstants:
         kSPI = 2
 
     navxPort = NavXPort.kUSB
+
+class LimitSwitchConstants:
+    cubeLimitSwitchID = 3
+    armLimitSwitchID = 0
+    clawLimitSwitchID = 1
