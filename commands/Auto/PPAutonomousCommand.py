@@ -96,7 +96,7 @@ class PPAutonomousCommand(Command):
         state = self.traverser.get_initial_state()
         self.swerveSubsystem.swerveAutoStartPose = state.pose
         # the robot's odometry should be initialized to the pose returned by the camera using AprilTags
-        # self.swerveSubsystem.resetOdometer(state.pose)  # may be problematic
+        self.swerveSubsystem.resetOdometer(state.pose)  # may be problematic
         # self.move_to_state(state)
         # print_async(
         #     "SwerveAutoCommand initialized:",
