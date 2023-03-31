@@ -1,21 +1,32 @@
 import os
 from commands.Auto.PPAutonomousCommand import PPAutonomousCommand
+from constants.RobotConstants import RobotConstants
 from subsystems.Arm.ArmAssemblySubsystem import ArmAssemblySubsystem
+from subsystems.Pickup.PickupSubsystem import PickupSubsystem
 from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 
 from wpilib import SendableChooser, SmartDashboard
 
 
 class PPAutonomousSelector:
-    _PPPath = "/home/lvuser/py/deploy/pathplanner"
+    defaultAuto = "Forwards_1m"
 
     def __init__(
         self,
         swerveSubsystem: SwerveSubsystem,
         armAssemblySubsystem: ArmAssemblySubsystem,
+        pickupSubsystem: PickupSubsystem,
     ):
         self.swerveSubsystem = swerveSubsystem
         self.armAssemblySubsystem = armAssemblySubsystem
+        self.pickupSubsystem = pickupSubsystem
+
+        # best variable name ever
+        self._PPPathsPath = (
+            "/home/lvuser/py/deploy/pathplanner"
+            if not RobotConstants.isSimulation
+            else f"{os.getcwd()}/deploy/pathplanner"
+        )
 
         self.chooser: SendableChooser | None = None
 
@@ -24,7 +35,7 @@ class PPAutonomousSelector:
     def readPathPlannerPaths(self):
         # I don't care about optimizing this
         files: list[str] = []
-        for dirpath, dirnames, filenames in os.walk(self._PPPath):
+        for dirpath, dirnames, filenames in os.walk(self._PPPathsPath):
             files.extend(filenames)
             break
 
@@ -39,17 +50,25 @@ class PPAutonomousSelector:
         self.chooser = SendableChooser()
 
         self.chooser.setDefaultOption(
-            autoPaths[0],
+            self.defaultAuto,
             PPAutonomousCommand(
-                self.swerveSubsystem, self.armAssemblySubsystem, autoPaths[0]
+                self.swerveSubsystem,
+                self.armAssemblySubsystem,
+                self.pickupSubsystem,
+                self.defaultAuto,
             ),
         )
 
-        for path in autoPaths[1:]:
+        for path in autoPaths:
+            if path == self.defaultAuto:
+                continue
             self.chooser.addOption(
                 path,
                 PPAutonomousCommand(
-                    self.swerveSubsystem, self.armAssemblySubsystem, path
+                    self.swerveSubsystem,
+                    self.armAssemblySubsystem,
+                    self.pickupSubsystem,
+                    path,
                 ),
             )
 

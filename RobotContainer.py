@@ -2,7 +2,6 @@ from commands.Auto.PPAutoSelector import PPAutonomousSelector
 from commands.Claw.ArmCommand import ArmCommand
 from commands2 import InstantCommand
 from constants.ArmConstants import ArmConstants
-from photonvision import PhotonCamera
 
 from commands.Auto.PPAutonomousCommand import PPAutonomousCommand
 from commands.Claw.MoveClawCommand import MoveClawCommand
@@ -19,8 +18,6 @@ from subsystems.Swerve.SwerveSubsystem import SwerveSubsystem
 class RobotContainer:
     field_oriented = True
 
-    photon_camera = PhotonCamera("photonvision")
-
     selectedGamePiece = GamePieceType.kEmpty
 
     def __init__(self) -> None:
@@ -29,10 +26,10 @@ class RobotContainer:
 
         self.swerveSubsystem = SwerveSubsystem()
         self.armAssemblySubsystem = ArmAssemblySubsystem(self.operatorController)
-        self.pickup = PickupSubsystem(self.operatorController)
+        self.pickupSubsystem = PickupSubsystem(self.operatorController)
 
         self.autoSelector = PPAutonomousSelector(
-            self.swerveSubsystem, self.armAssemblySubsystem
+            self.swerveSubsystem, self.armAssemblySubsystem, self.pickupSubsystem
         )
 
         self.configureButtonBindings()
@@ -58,12 +55,6 @@ class RobotContainer:
 
     def getAutonomousCommand(self):
         return self.autoSelector.getSelectedAutonomousCommand()
-
-    def vision_track(self):
-        if self.photon_camera.hasTargets():
-            target = self.photon_camera.getLatestResult().getBestTarget()
-            transform_to_target = target.getBestCameraToTarget()
-            # TODO
 
     def configureButtonBindings(self) -> None:
         c1Connected = self.pilotController.isConnected()
@@ -170,9 +161,9 @@ class RobotContainer:
         )
 
     def setupPickup(self):
-        self.pickup.setDefaultCommand(
+        self.pickupSubsystem.setDefaultCommand(
             PickupCommand(
-                self.pickup, self.operatorController, self.getSelectedGamePiece
+                self.pickupSubsystem, self.operatorController, self.getSelectedGamePiece
             )
         )
 

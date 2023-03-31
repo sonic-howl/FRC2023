@@ -167,6 +167,9 @@ class ArmSubsystem(SubsystemBase):
         """
         self.setAngle(self.getAngle() + angle)
 
+    def updateLastAngle(self):
+        self.lastSetAngle = self.getAngle()
+
     def holdPosition(self):
         """
         Holds the current position of the arm.

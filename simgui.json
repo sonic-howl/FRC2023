@@ -17,6 +17,7 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Arm Sim": "Mechanism2d",
+      "/SmartDashboard/Auto Selector": "String Chooser",
       "/SmartDashboard/Field": "Field2d"
     },
     "windows": {
