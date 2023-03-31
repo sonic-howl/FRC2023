@@ -41,11 +41,17 @@ class MoveClawCommand(Command):
             if abs(armSpeed) > 0 and (armSpeed < 0 or self.armSubsystem.arm.getAngle() <= 130):
                 self.armSubsystem.stopHoldArmPosition()
                 self.armSubsystem.arm.armMotor.set(armSpeed)
+                self.armSubsystem.arm.updateLastAngle()
+            else:
+                self.armSubsystem.setHoldArmPosition()
             clawSpeed = self.controller.getClawRotation() * ArmConstants.Claw.speedScale
             lowerClawLimit = 90 - self.armSubsystem.arm.getAngle()
             if abs(clawSpeed) > 0 and (clawSpeed > 0 or self.armSubsystem.claw.getAngle() > lowerClawLimit):
                 self.armSubsystem.stopHoldClawPosition()
                 self.armSubsystem.claw.armMotor.set(clawSpeed)
+                self.armSubsystem.claw.updateLastAngle()
+            else:
+                self.armSubsystem.setHoldClawPosition()
 
             # armAxis = self.controller.getArmRotation()
             # if armAxis == 0 or sgn(self.lastArmAxis) != sgn(armAxis):

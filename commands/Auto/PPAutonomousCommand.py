@@ -1,8 +1,14 @@
-import typing
 from commands.Claw.ArmCommand import ArmCommand
 
-from commands2 import Command, Subsystem
+from commands2 import (
+    CommandBase,
+    InstantCommand,
+    WaitCommand,
+    RepeatCommand,
+)
+from constants.GameConstants import GamePieceType
 from pathplannerlib import PathPlannerTrajectory
+from subsystems.Pickup.PickupSubsystem import PickupSubsystem
 from wpimath.controller import (
     HolonomicDriveController,
     PIDController,
@@ -21,17 +27,22 @@ from utils.utils import printAsync
 from commands.Auto.PathPlanner import PathTraverser
 
 
-class PPAutonomousCommand(Command):
+class PPAutonomousCommand(CommandBase):
     def __init__(
         self,
         swerveSubsystem: SwerveSubsystem,
         armAssemblySubsystem: ArmAssemblySubsystem,
+        pickupSubsystem: PickupSubsystem,
         pathName: str,
     ) -> None:
         super().__init__()
 
         self.swerveSubsystem = swerveSubsystem
         self.armAssemblySubsystem = armAssemblySubsystem
+        self.pickupSubsystem = pickupSubsystem
+        self.addRequirements(
+            self.swerveSubsystem, self.armAssemblySubsystem, self.pickupSubsystem
+        )
 
         # TODO maybe move these to the swerve class, or have something similar
         x_pid = PIDController(1, 0, 0, period=RobotConstants.period)
@@ -82,10 +93,36 @@ class PPAutonomousCommand(Command):
                     ),
                 )
 
-        self.finished = False
+        def makePickupHandler(gamePieceType: GamePieceType):
+            speed = 1
+            if gamePieceType == GamePieceType.kCone:
+                speed = -speed
 
-    def getRequirements(self) -> typing.Set[Subsystem]:
-        return {self.swerveSubsystem}
+            self.traverser.on(
+                f"{gamePieceType.name}/intakePickup",
+                WaitCommand(2).deadlineWith(
+                    RepeatCommand(
+                        InstantCommand(
+                            lambda: self.pickupSubsystem.pickupMotor.set(speed)
+                        )
+                    )
+                ),
+            )
+            self.traverser.on(
+                f"{gamePieceType.name}/releasePickup",
+                WaitCommand(1).deadlineWith(
+                    RepeatCommand(
+                        InstantCommand(
+                            lambda: self.pickupSubsystem.pickupMotor.set(-speed)
+                        )
+                    )
+                ),
+            )
+
+        makePickupHandler(GamePieceType.kCone)
+        makePickupHandler(GamePieceType.kCube)
+
+        self.finished = False
 
     def initialize(self) -> None:
         self.finished = False
@@ -96,7 +133,7 @@ class PPAutonomousCommand(Command):
         state = self.traverser.get_initial_state()
         self.swerveSubsystem.swerveAutoStartPose = state.pose
         # the robot's odometry should be initialized to the pose returned by the camera using AprilTags
-        # self.swerveSubsystem.resetOdometer(state.pose)  # may be problematic
+        self.swerveSubsystem.resetOdometer(state.pose)  # may be problematic
         # self.move_to_state(state)
         # print_async(
         #     "SwerveAutoCommand initialized:",

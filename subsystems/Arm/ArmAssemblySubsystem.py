@@ -103,10 +103,10 @@ class ArmAssemblySubsystem(SubsystemBase):
         self._holdArmPositionFlag = False
 
     def stopHoldClawPosition(self):
-        self._holdArmPositionFlag = False
+        self._holdClawPositionFlag = False
 
     def setHoldArmPosition(self):
-        self._holdClawPositionFlag = True
+        self._holdArmPositionFlag = True
 
     def setHoldClawPosition(self):
         self._holdClawPositionFlag = True
