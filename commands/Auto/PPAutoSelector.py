@@ -9,7 +9,7 @@ from wpilib import SendableChooser, SmartDashboard
 
 
 class PPAutonomousSelector:
-    defaultAuto = "Charge Station"
+    defaultAuto = "Forwards_1m"
 
     def __init__(
         self,
