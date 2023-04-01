@@ -28,8 +28,8 @@ class ArmConstants:
                 SubsystemType.kClaw: 180,
             },
             AngleType.kFloor: {
-                SubsystemType.kArm: 0,
-                SubsystemType.kClaw: 105,
+                SubsystemType.kArm: 2.13,
+                SubsystemType.kClaw: 101.8,
             },
             AngleType.kUpperFeedStation: {
                 SubsystemType.kArm: 92,
