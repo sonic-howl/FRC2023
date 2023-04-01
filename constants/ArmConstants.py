@@ -118,8 +118,11 @@ class ArmConstants:
                         angles[gamePiece][angleType][subsystemType] = preferencesAngle
 
     class Arm:
+        name = "Arm"
+
         motorType = rev.CANSparkMax.MotorType.kBrushed
         speedScale = 0.6
+        kMotorSpeedReversed = False
         currentLimit = 40  # amps
 
         initialPosition = 0.0  # degrees
@@ -127,6 +130,8 @@ class ArmConstants:
         encoderOffsetHack = 360.0  # degrees
 
         kCANId = 10
+        kReverseLimitSwitchId = 0
+        kReverseLimitSwitchInvert = True
         kConversionFactorToDeg = 27.6341
         kMaxVelocityRPM = 2000  # TODO calibrate
         kMaxAccelerationRPM = 1500  # TODO calibrate
@@ -152,8 +157,11 @@ class ArmConstants:
             omegaScale = 1
 
     class Claw:
+        name = "Claw"
+
         motorType = rev.CANSparkMax.MotorType.kBrushless
         speedScale = 0.25
+        kMotorSpeedReversed = True
         currentLimit = 20  # amps
 
         initialPosition = 180.0  # degrees
@@ -162,6 +170,8 @@ class ArmConstants:
         encoderOffsetHack = 0.0  # degrees
 
         kCANId = 11
+        kReverseLimitSwitchId = 1
+        kReverseLimitSwitchInvert = True
         kConversionFactorToDeg = 2.99089
         kMaxVelocityRPM = 1500  # TODO calibrate
         kMaxAccelerationRPM = 500  # TODO calibrate

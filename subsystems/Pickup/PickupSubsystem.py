@@ -16,12 +16,7 @@ class PickupSubsystem(Subsystem):
         self.pickupMotor.setSmartCurrentLimit(20)
         self.pickupMotor.setIdleMode(rev.CANSparkMax.IdleMode.kBrake)
 
-        self.cubeLimitSwitch = wpilib.DigitalInput(0)
-
         self.limitSwitchHitChecked = False
-
-    def isCubeLimitSwitchHit(self):
-        return self.cubeLimitSwitch.get()
 
     def getLimitSwitchHitChecked(self):
         return self.limitSwitchHitChecked
