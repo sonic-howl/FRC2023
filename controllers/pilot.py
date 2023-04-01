@@ -44,3 +44,6 @@ class PilotController:
 
     def resetGyroBtn(self):
         return self._controller.Y()
+
+    def recordArmAnglesAndSelectedPieceBtn(self):
+        return self._controller.A()

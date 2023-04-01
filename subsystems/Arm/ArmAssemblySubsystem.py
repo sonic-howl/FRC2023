@@ -25,8 +25,8 @@ class ArmAssemblySubsystem(SubsystemBase):
             or self.operatorController.getClawRotation() != 0
         )
 
-    lastArmPos = 0
-    lastClawPos = 0
+    # lastArmPos = 0
+    # lastClawPos = 0
 
     def periodic(self) -> None:
         # if there is manual control, cancel the current command to run the default command
@@ -36,15 +36,15 @@ class ArmAssemblySubsystem(SubsystemBase):
         #     if self.getDefaultCommand() != currentCommand:
         #         currentCommand.cancel()
 
-        armPos = self.arm.getAngle()
-        clawPos = self.claw.getAngle()
-        if armPos != self.lastArmPos:
-            print("Arm angle:", armPos)
-        if clawPos != self.lastClawPos:
-            print("Claw angle:", clawPos)
+        # armPos = self.arm.getAngle()
+        # clawPos = self.claw.getAngle()
+        # if armPos != self.lastArmPos:
+        #     print("Arm angle:", armPos)
+        # if clawPos != self.lastClawPos:
+        #     print("Claw angle:", clawPos)
 
-        self.lastArmPos = armPos
-        self.lastClawPos = clawPos
+        # self.lastArmPos = armPos
+        # self.lastClawPos = clawPos
 
         if self._holdArmPositionFlag:
             self.holdArmPosition()
