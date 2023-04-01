@@ -13,7 +13,8 @@ class PickupSubsystem(Subsystem):
         self.controller = operatorController
 
         self.pickupMotor = rev.CANSparkMax(12, rev.CANSparkMax.MotorType.kBrushless)
-        self.pickupMotor.setSmartCurrentLimit(15)
+        self.pickupMotor.setSmartCurrentLimit(20)
+        self.pickupMotor.setIdleMode(rev.CANSparkMax.IdleMode.kBrake)
 
         self.cubeLimitSwitch = wpilib.DigitalInput(0)
 
