@@ -47,7 +47,7 @@ class RobotContainer:
 
     @staticmethod
     def setSelectedGamePiece(gamePiece: GamePieceType):
-        print("Selected game piece: " + gamePiece.name)
+        # print("Selected game piece: " + gamePiece.name)
         RobotContainer.selectedGamePiece = gamePiece
 
     def get_angle(self):
@@ -111,6 +111,17 @@ class RobotContainer:
         )
         self.pilotController.resetGyroBtn().onTrue(
             InstantCommand(self.swerveSubsystem.resetGyro)
+        )
+
+        def recordAnglesAndSelectedPiece():
+            print()
+            print("Selected piece:", self.getSelectedGamePiece())
+            print("Arm Angle Rec: ", self.armAssemblySubsystem.arm.getAngle())
+            print("Claw Angle Rec:", self.armAssemblySubsystem.claw.getAngle())
+            print()
+
+        self.pilotController.recordArmAnglesAndSelectedPieceBtn().onTrue(
+            InstantCommand(recordAnglesAndSelectedPiece)
         )
 
     def setupArm(self):
