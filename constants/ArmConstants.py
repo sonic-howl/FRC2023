@@ -28,8 +28,8 @@ class ArmConstants:
                 SubsystemType.kClaw: 180,
             },
             AngleType.kFloor: {
-                SubsystemType.kArm: 0,
-                SubsystemType.kClaw: 105,
+                SubsystemType.kArm: 2.13,
+                SubsystemType.kClaw: 101.8,
             },
             AngleType.kUpperFeedStation: {
                 SubsystemType.kArm: 92,
@@ -153,7 +153,7 @@ class ArmConstants:
 
     class Claw:
         motorType = rev.CANSparkMax.MotorType.kBrushless
-        speedScale = 0.5
+        speedScale = 0.25
         currentLimit = 20  # amps
 
         initialPosition = 180.0  # degrees
